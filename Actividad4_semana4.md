@@ -26,11 +26,11 @@ explícita.
    - Control: Puedes inspeccionar, depurar o modificar el historial del algoritmo en cualquier momento porque la pila es una variable más de tu código.
 5. Explica qué información mínima debe guardarse para que una pila permita reconstruir una solución parcial.
 
- Para poder reconstruir el camino o deshacer pasos (backtracking), cada elemento guardado en la pila debe contener, como mínimo:
+   Para poder reconstruir el camino o deshacer pasos (backtracking), cada elemento guardado en la pila debe contener, como mínimo:
 
-   1. El estado o posición actual: (Por ejemplo, las coordenadas (x, y) en Maze.h o la fila/columna de la reina en Queen.h).
+     1. El estado o posición actual: (Por ejemplo, las coordenadas (x, y) en Maze.h o la fila/columna de la reina en Queen.h).
 
-   2. El historial de decisiones locales / Siguiente opción a probar: Necesitas saber qué alternativas ya exploraste y cuál sigue. En Maze.h, esto se logra mediante el enumerador ESWN outgoing, que guarda qué dirección se intentó tomar antes de pausar o retroceder. Sin esto, el algoritmo entraría en un bucle infinito al regresar a un estado previo.
+     2. El historial de decisiones locales / Siguiente opción a probar: Necesitas saber qué alternativas ya exploraste y cuál sigue. En Maze.h, esto se logra mediante el enumerador ESWN outgoing, que guarda qué dirección se intentó tomar antes de pausar o retroceder. Sin esto, el algoritmo entraría en un bucle infinito al regresar a un estado previo.
 
 6. Compara la conversión de base recursiva e iterativa: ¿qué comparten y qué cambia en el control del proceso?
 
@@ -42,7 +42,7 @@ explícita.
 
 7. Explica por qué la verificación iterativa de paréntesis necesita almacenar aperturas pendientes.
 
- Porque los símbolos de agrupación operan bajo una regla de anidación simétrica (el último que se abre debe ser el primero que se cierre). Cuando el código en Parentheses.h encuentra un cierre (como ]), el algoritmo no tiene ojos en la espalda para saber si es válido; necesita comprobar si el último paréntesis abierto sin emparejar coincide exactamente con ese tipo. Al guardar las aperturas en una pila, el carácter correcto para validar el cierre siempre estará en el top().
+   Porque los símbolos de agrupación operan bajo una regla de anidación simétrica (el último que se abre debe ser el primero que se cierre). Cuando el código en Parentheses.h encuentra un cierre (como ]), el algoritmo no tiene ojos en la espalda para saber si es válido; necesita comprobar si el último paréntesis abierto sin emparejar coincide exactamente con ese tipo. Al guardar las aperturas en una pila, el carácter correcto para validar el cierre siempre estará en el top().
 
 8. Explica por qué el evaluador de expresiones necesita dos pilas y no una sola.
 
@@ -215,3 +215,103 @@ explícita.
  Imagina que en ExpressionEvaluator.h, al implementar la matriz de prioridades en OperatorPriority.h, cometes el error de asignar la misma prioridad y asociatividad al operador de suma (+) y al de potencia (^).
 
  Si ejecutas una prueba mínima o lineal como 3+4*2 (que solo evalúa suma contra multiplicación), la prueba pasará con éxito porque el error está oculto en otro operador. Incluso una expresión como 2^3+4 podría pasar si los operandos no fuerzan la ambigüedad. Sin embargo, en el momento en que el sistema real intente evaluar una expresión combinada como 2^3^2 o 5+2^3, el algoritmo romperá las reglas de la matemática e introducirá un error de cálculo masivo en producción. Las pruebas mínimas validan el "camino feliz", pero solo la comprensión profunda de las invariantes y los casos límite protegen contra fallos conceptuales.
+
+#### Bloque 4 - Comparación recursivo vs iterativo
+
+1. En conversión de base, ¿qué papel juegan el cociente, el residuo y la pila?
+
+ - **El residuo (n % base):** Representa el valor del dígito de la nueva base que se acaba de extraer. El detalle clave es que las divisiones nos entregan estos residuos en orden de menor a mayor significancia (primero las unidades, luego las decenas de la nueva base, etc.).
+
+ - **El cociente (n / base):** Actúa como el estado de control. Es la parte entera que queda tras la división y sirve para alimentar la siguiente iteración o llamada recursiva. Cuando el cociente llega a 0, significa que ya extrajimos hasta el último dígito posible.
+
+ - **La pila (Stack<char>& stack):** Funciona como un mecanismo de inversión temporal. Dado que los residuos se calculan al revés de cómo se leen o escriben matemáticamente, la pila los retiene momentáneamente para poder revertir su orden al final.
+
+2. ¿Por qué los residuos se apilan antes de formar la cadena final?
+
+  Si convirtiéramos el número decimal $11$ a binario (base 2) y simplemente fuéramos concatenando los residuos en un string conforme van saliendo de las operaciones:
+    1. 11/ 2 = 5 residuo 1 (Bit menos significativo/Unidades)
+    2. 5/2 =2, residuo 1
+    3. 2/2 =1, residuo 0
+    4. 1/2 =0, residuo 1(Bit mas significativo)
+  
+     Si los unimos tal como salen. Obtendriamos "1101", lo cual equivale al decimal 13 en binario(¡incorrecto!).El resultado matematico real debe ser 1011(sub2).
+     Al meterlos a la pila (stack.push), el bit de las unidades (1) se va al fondo, y el bit más significativo (1) queda hasta arriba en el top(). Al ejecutar popAll(), la naturaleza LIFO de la pila revierte por completo la secuencia, entregándonos los caracteres en el orden de lectura correcto (de izquierda a derecha, de mayor a menor significancia).
+
+3. ¿Qué cambia entre dejar que el call stack haga el trabajo y manejar una pila explícita?
+
+   - **En convertRecursive (Call Stack implícito):** Tú le delegas el flujo de control al sistema operativo. Cada vez que la función se llama a sí misma, la computadora detiene la ejecución actual y guarda un "registro de activación" con las variables locales en la memoria del sistema. La pila explícita de caracteres que pasas por referencia (stack) solo se va llenando a medida que la recursión va "regresando" de las llamadas.
+
+   - **En convertIterative (Pila explícita):** El control del proceso es plano y directo mediante un bucle while. Toda la lógica corre dentro del mismo entorno de ejecución. No hay llamadas extras a funciones ni sobrecarga en la memoria del sistema (cero riesgo de Stack Overflow). Tú controlas activamente el llenado de la pila local en cada paso del ciclo.
+
+4. En `parenRecursive`, ¿qué idea intenta capturar `divideParentheses`?
+
+ **divideParentheses** intenta modelar la propiedad de anidación profunda mediante la estrategia de Divide y Vencerás. Su objetivo principal es encontrar el paréntesis de cierre que se encuentra al mismo nivel sintáctico que el paréntesis de apertura de la izquierda (lo).
+
+ Para lograrlo, usa una variable de control llamada crc (un contador de balanceo):
+
+   - Incrementa **crc** cuando ve un **(** y lo decrementa con un **)**.
+
+   - Cuando **crc** vuelve a ser **0**, el algoritmo sabe que ha localizado la frontera exacta (mi) donde termina el bloque actual.
+
+  Esto le permite dividir el problema en dos subproblemas independientes: validar lo que está estrictamente dentro de ese bloque (**lo + 1** hasta **mi - 1**) y validar lo que viene después de él (**mi + 1** hasta **hi**).
+
+5. ¿Qué limitación conceptual tiene la versión recursiva mostrada frente a la iterativa cuando aparecen `[]` y `{}`?
+
+ La versión recursiva **parenRecursive** mostrada en el archivo está diseñada exclusivamente para un solo tipo de carácter (( y )).
+
+ Si intentáramos extenderla directamente para soportar llaves y corchetes, colapsaría conceptualmente. ¿Por qué? Porque **divideParentheses** solo rastrea la profundidad contando aperturas y cierres genéricos, pero no tiene memoria histórica para validar si el carácter de cierre coincide en tipo con el de apertura.
+
+ Para que la recursión pudiera validar expresiones híbridas como **{[()]}**, tendría que validar en cada subdivisión qué tipo de símbolo abrió la frontera, lo que volvería al código sumamente complejo, ineficiente y propenso a errores al intentar segmentar los límites de la cadena.
+
+6. En `parenIterative`, ¿por qué un cierre incorrecto puede detectarse apenas aparece?
+
+ La versión iterativa tiene una ventaja fundamental: posee memoria de emparejamiento inmediato gracias a la pila.
+
+   case ']':
+       if (stack.empty() || stack.pop() != '[') {
+           return false;
+       }
+       break;
+
+  Cuando el bucle recorre la cadena de izquierda a derecha y se topa con un carácter de cierre (por ejemplo, ]), no necesita analizar el resto de la cadena ni calcular subdivisiones. Debido a la regla de simetría, el carácter que está en el top() de la pila tiene que ser forzosamente su apertura correspondiente ([). Si la pila está vacía (cierre huérfano) o si al hacer pop() sale un carácter diferente (como { o (), el invariante de balanceo se rompe en ese mismísimo instante y la función aborta devolviendo **false**.
+
+7. Compara ambas parejas de funciones: ¿en cuál caso la versión iterativa te parece más natural y en cuál la recursiva resulta más expresiva?
+
+ - **Conversión de Base:** La versión iterativa (**convertIterative**) resulta mucho más natural y eficiente. El problema de dividir un número sucesivamente hasta llegar a cero es intrínsecamente un bucle. Forzar una recursión aquí añade una sobrecarga innecesaria a la pila de llamadas del sistema para resolver algo que un simple while resuelve de forma limpia.
+
+ - **Verificación de Paréntesis:** La versión iterativa con pila (**parenIterative**) es inmensamente superior tanto en claridad como en expresividad. Captura de forma elegante la esencia del problema: "guardo lo que abro, lo borro cuando lo cierro". Por el contrario, la versión recursiva (**parenRecursive**), con sus funciones auxiliares para recortar (**trimParentheses**) y dividir (**divideParentheses**), resulta artificial, difícil de leer y muy costosa en tiempo debido a las múltiples pasadas que hace sobre los índices de la cadena de texto.
+
+#### Bloque 5 - Evaluación de expresiones y prioridad de operadores
+
+1. Explica qué información guarda `EvaluationResult`.
+
+ EvaluationResult: guarda el value (valor numérico final, tipo double) y la rpn (representación en notación polaca inversa, std::string). Permite devolver simultáneamente resultado y trazado legible de la evaluación.
+
+2. Explica por qué primero se eliminan espacios.
+
+ Eliminación de espacios: removeSpaces simplifica el análisis carácter a carácter: evita ramas por espacios, facilita indexado y lookahead, y asegura que el lexer/parseador vea solo tokens relevantes.
+3. Explica cómo se detecta el signo menos unario.
+ 
+ Detección de menos unario: isUnaryMinus comprueba que el carácter es '-', que el siguiente carácter existe y es dígito o '.', y que el anterior es inicio de cadena o un operador/**(**; así distingue -3 (unario) de a-3 (binario).
+
+4. Explica por qué el factorial se trata como operador unario y qué restricción impone el código.
+
+ Factorial como operador unario y su restricción: el factorial ('!') es operador postfix que toma un único operando; el código trata ! como unario y, antes de calcular, exige que el operando sea (prácticamente) entero: redondea y comprueba diferencia < 1e-9; además factorialInt lanza error si el entero es negativo.
+
+5. Explica cómo la RPN se va construyendo durante la evaluación y no al final.
+
+ RPN construida durante la evaluación: la cadena RPN se va ampliando a medida que se leen operandos (appendRpn al leer números) y cada vez que se desapila un operador (appendRpn cuando se aplica un operador). No se reconstruye al final: se registra el orden real de reducción mientras se evalúa.
+
+6. Explica qué significa la relación entre operador del tope y símbolo actual.
+
+ Significado de la relación entre operador tope y símbolo actual: orderBetween usa la tabla de precedencias (pri) para devolver <, > o =. < significa "empujar" el símbolo actual sobre la pila de operadores; > significa "desapilar y evaluar" el operador del tope; = indica emparejamiento (p. ej. ( con )) o fin de expresión.
+
+
+7. Explica por qué una expresión mal formada debe terminar en error y no en un valor arbitrario.
+
+ Por qué una expresión mal formada debe lanzar error: aceptar silenciosamente un resultado arbitrario oculta fallos semánticos/sintácticos. El código detecta y lanza **runtime_error** en casos como tokens inesperados, operadores sin operandos suficientes, división por cero o al final no reducir a un único operando; esto garantiza corrección y evita resultados engañosos.
+
+ 8. ¿Qué ventaja conceptual tiene obtener a la vez el valor y la RPN?
+
+ Ventaja de obtener valor y RPN a la vez: eficiencia (un solo pase para ambos), trazabilidad (la RPN sirve para depuración y verificación), y reutilización (la RPN puede re-evaluarse o mostrarse al usuario). Facilita comprobar y explicar por qué se obtuvo ese valor.
+
