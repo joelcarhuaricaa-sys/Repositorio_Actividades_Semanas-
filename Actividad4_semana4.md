@@ -315,3 +315,95 @@ explícita.
 
  Ventaja de obtener valor y RPN a la vez: eficiencia (un solo pase para ambos), trazabilidad (la RPN sirve para depuración y verificación), y reutilización (la RPN puede re-evaluarse o mostrarse al usuario). Facilita comprobar y explicar por qué se obtuvo ese valor.
 
+#### Bloque 6 - Backtracking explícito: N-Reinas y laberinto
+
+1. En `Queen`, ¿qué significa que dos reinas entren en conflicto?
+
+ En Queen: que dos reinas entren en conflicto significa que ocupan la misma fila (x), la misma columna (y) o la misma diagonal (mismo x+y o mismo x-y). El operador == implementa esa comprobación.
+
+2. En `NQueens`, ¿qué representa exactamente la pila `solution`?
+ 
+ En NQueens: la pila solution contiene la colocación parcial actual —una Queen por fila— desde la fila 0 hasta la fila última colocada; la cima es la última reina añadida (estado parcial del backtracking).
+
+3. ¿Qué significa avanzar en columna dentro de una fila y cuándo toca retroceder?
+
+ "Avanzar en columna dentro de una fila" significa incrementar y para intentar otra columna en la misma fila x. Se retrocede cuando no quedan columnas válidas en la fila actual (o se alcanza y>=n): se hace pop() de la pila para volver a la fila anterior y probar la siguiente columna allí.
+
+4. ¿Por qué `checks` es una métrica útil para analizar la búsqueda?
+
+  checks cuenta cuántas comparaciones de conflicto se hacen (cada vez que se comprueba candidate == q). Es útil porque mide el trabajo de búsqueda/prueba (coste de exploración y poda) independientemente del número de soluciones encontradas.
+
+5. ¿Qué cambia cuando `collectPlacements` vale `false`?
+
+  Si collectPlacements == false se omite la construcción/almacenamiento de los vectores placement, por lo que se ahorra memoria y tiempo; el algoritmo sigue contando solutions y checks pero no devuelve las colocaciones concretas.
+
+6. En `Maze`, ¿qué representa el estado `AVAILABLE`, `ROUTE`, `BACKTRACKED` y `WALL`?
+
+  En **Maze**:
+
+ - **AVAILABLE:** celda libre y no explorada.
+ - **ROUTE:** celda marcada como parte del camino actual (ruta en construcción).
+ - **BACKTRACKED:** celda explorada que se descartó porque no conduce al objetivo.
+ - **WALL:** celda impracticable (obstáculo).
+
+7. ¿Qué información codifican `incoming` y `outgoing`?
+
+ incoming codifica la dirección desde la que se entró en la celda (para poder saber la procedencia); outgoing codifica la siguiente dirección a probar/desplazarse desde esa celda (o la dirección por la que se salió).
+
+8. ¿Por qué el algoritmo del laberinto marca y desmarca estado en lugar de solo "moverse"?
+
+ El algoritmo marca/desmarca estados para evitar ciclos, recordar qué celdas ya fueron probadas y distinguir rutas válidas de callejones sin salida. Esa marcación permite la lógica iterativa con pila: saber cuándo retroceder y qué celdas ya fueron descartadas, algo que no se logra solo "moviendo" la posición actual.
+
+9. Compara N-Reinas y laberinto: ¿qué comparten como problemas de búsqueda y qué cambia en la representación del estado?
+ 
+ Comparación N-Queens vs Maze:
+
+ - Similitudes: ambos son problemas de búsqueda/backtracking que exploran un espacio de estados, usan una pila o camino parcial, y retroceden al hallar calles sin salida; ambos aplican poda para evitar explorar estados inútiles.
+ - Diferencias en representación de estado: N-Queens representa combinaciones (una reina por fila; estado = lista de colocaciones, conflicto por pares) y la vecindad es "poner una reina en otra columna de la siguiente fila". Maze representa posiciones espaciales con estados por celda (**AVAILABLE/ROUTE/BACKTRACKED/WALL**) y direcciones (**incoming/outgoing**); la vecindad son los vecinos cardinales. Además la poda en **N-Queens** surge de comprobaciones de conflicto (filtrado lógico), mientras que en **Maze** surge de marcar celdas visitadas y evitar volver sobre ellas (poda por recorrido).
+
+#### Bloque 7 - Simulación bancaria y experimentación con colas
+
+1. ¿Qué representa cada `Queue<Customer>` dentro del vector `windows`?
+
+  Cada **Queue<Customer>** en el vector **windows** representa la fila de espera de una ventanilla del banco. Es decir, cada ventanilla tiene su propia cola de clientes esperando ser atendidos.
+
+2. ¿Qué criterio usa `bestWindow` y qué decisión toma cuando hay empate?
+
+  **bestWindow** elige la ventanilla con la cola más corta comparando **windows[i].size()**. Si hay empate se queda con la primera ventanilla que aparece con el tamaño mínimo, porque **opt** solo cambia cuando encuentra una cola estrictamente más pequeña.
+
+
+3. ¿Qué significa que la simulación use una semilla (`seed`)?
+
+ La semilla (seed) fija el generador pseudoaleatorio std::mt19937, por lo que la secuencia de llegadas y tiempos de servicio es reproducible. Con la misma semilla y mismos   parámetros, la simulación produce exactamente el mismo resultado.
+
+4. ¿Qué relación debe cumplirse entre `totalArrivals` y `totalServed`, y por qué?
+
+ Debe cumplirse totalArrivals >= totalServed. Cada cliente atendido primero debe haber llegado, y la simulación no puede servir más clientes que los que entraron al sistema.
+
+5. ¿Qué representa la línea de tiempo (`timeline`) en el resultado?
+
+ La timeline es el historial de estados de la simulación en cada instante de tiempo now. Cada BankSimulationStep guarda el instante y las colas actuales de cada ventanilla, representadas como tiempos de servicio restantes de los clientes en la cola.
+
+6. ¿Por qué esta aplicación necesita colas y no pilas?
+
+ Necesita colas porque el orden de servicio es FIFO: el primer cliente que llega a una ventanilla es el primero en ser atendido. Una pila sería LIFO, lo que significaría atender al último cliente llegado antes que los anteriores, y eso no refleja el comportamiento de una fila de banco.
+
+7. ¿Qué simplificación del mundo real introduce este simulador?
+
+ El simulador simplifica la realidad al usar:
+
+ - llegadas aleatorias independientes con probabilidad fija arrival(rng) != 0,
+ - tiempos de servicio aleatorios sencillos,
+ - una sola unidad de servicio por paso de tiempo,
+ - y no considera clientes que cambian de fila, prioridades, llegadas simultáneas complejas ni tiempos de llegada exactos.
+
+8. ¿Qué cambiaría si la política ya no fuera "cola más corta" sino otra?
+ Si la política fuera otra, cambiaría cómo se elige la ventanilla para cada nuevo cliente. Por ejemplo:
+
+   - “menos clientes atendidos” podría buscar la cola con menos tiempo total restante,
+   - “round robin” podría asignar en orden cíclico,
+   - “aleatoria” elegiría una ventanilla al azar.
+    Eso modificaría la distribución de carga entre ventanillas y el comportamiento de congestión final.
+
+
+
