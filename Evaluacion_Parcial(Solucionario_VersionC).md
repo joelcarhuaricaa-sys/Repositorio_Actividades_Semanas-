@@ -1,10 +1,12 @@
-### CC232 - Evaluacion Parcial 1 (Vers ion C)
+### CC232 - Evaluacion Parcial 1 (Version C)
 Nombre: Joel Gustavo Carhuarica Aguilar 
 
 #### Pregunta 2 
 
 a)Trace sumRec([2,4,6,8],4) mostrando llamadas y retornos.
+
   **Llamadas:**
+
   Paso 1: Llamada inicial
   sumRec(A, 4)
    → Como n=4 ≠ 0, ejecuta: return sumRec(A, 3) + A[3]
@@ -53,9 +55,13 @@ a)Trace sumRec([2,4,6,8],4) mostrando llamadas y retornos.
   Mostrandonos el Resultado final = **20**
 
 b) Pruebe correctitud por induccion sobre n.
-  Lo que queremos probar: sumRec(A, n) = A[0] + A[1] + ... + A[n-1]
+
+  Lo que queremos probar: sumRec(A, n) = A[0] + A[1] + ... + A[n-1].
+
   Caso base n = 0:La función retorna 0. Una suma vacía vale 0.
-  Hipótesis inductiva:Supongamos que para algún k ≥ 0, la función es correcta:
+  
+  Hipótesis inductiva:Supongamos que para algún k ≥ 0, la 
+  función es correcta:
 
   sumRec(A, k) = A[0] + A[1] + ... + A[k-1]
 
@@ -66,9 +72,11 @@ b) Pruebe correctitud por induccion sobre n.
   Aplicando la hipótesis inductiva:
 
   = (A[0] + A[1] + ... + A[k-1]) + A[k]
+
   = A[0] + A[1] + ... + A[k]
 
   Que es exactamente la suma de los primeros k+1 elementos.
+
   Por inducción, la función es correcta para todo **n ≥ 0.**
 
 c) Analice tiempo y espacio adicional. Distinga memoria del arreglo y pila de llamadas.
@@ -123,6 +131,7 @@ f) Indique dos casos borde y como deberian probarse.
   Caso borde 1 —> arreglo vacío (n = 0):
   
   int A[] = {};
+  
   assert(sumRec(A, 0) == 0);
 
   Por qué es borde: es el caso base de la recursión. Si falla aquí, toda la inducción colapsa. Se espera retorno 0.
@@ -130,6 +139,7 @@ f) Indique dos casos borde y como deberian probarse.
   Caso borde 2 —> arreglo con un solo elemento (n = 1):
 
   int A[] = {42};
+
   assert(sumRec(A, 1) == 42);
 
   Por qué es borde: es el primer paso inductivo real. La llamada hace sumRec(A,0) + A[0] = 0 + 42 = 42. Verifica que el caso base y el paso recursivo interactúan correctamente.
