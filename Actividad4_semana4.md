@@ -1,33 +1,92 @@
 ### Actividad4_Semana4
 #### Bloque 1 - Núcleo conceptual de la semana
+1. Explica con tus palabras la diferencia entre acceso `LIFO` y acceso `FIFO`.
 
-Revisa:
+  - LIFO (Pila): El último elemento en ingresar (push) es el primero en ser retirado (pop). Imagina una pila de platos: solo puedes interactuar de forma segura con el que está arriba del todo.
 
-    1. Semana4/README.md
-    Semana4/include/Stack.h
-    Semana4/include/Queue.h
-    Semana4/include/BaseConversion.h
-    Semana4/include/Parentheses.h
-    Semana4/include/ExpressionEvaluator.h
-    Semana4/include/NQueens.h
-    Semana4/include/Maze.h
-    Semana4/include/BankSimulation.h
-    Capítulo 4 de Deng.
+  - FIFO (Cola): El primer elemento en ingresar (enqueue) es el primero en salir (dequeue). Es la dinámica de una fila de banco real: el que llegó primero merece ser atendido primero, y los nuevos se forman al final.
 
-Responde:
+2. Explica por qué `Stack` resuelve naturalmente problemas donde importa "lo último pendiente".
 
-    Explica con tus palabras la diferencia entre acceso LIFO y acceso FIFO.
-    Explica por qué Stack resuelve naturalmente problemas donde importa "lo último pendiente".
-    Explica por qué Queue modela naturalmente procesos de espera y atención.
-    Explica qué significa reemplazar recursión implícita por una estructura explícita.
-    Explica qué información mínima debe guardarse para que una pila permita reconstruir una solución parcial.
-    Compara la conversión de base recursiva e iterativa: ¿qué comparten y qué cambia en el control del proceso?
-    Explica por qué la verificación iterativa de paréntesis necesita almacenar aperturas pendientes.
-    Explica por qué el evaluador de expresiones necesita dos pilas y no una sola.
-    Explica por qué N-Reinas y laberinto son ejemplos naturales de backtracking.
-    Explica por qué la simulación bancaria no se modela bien con pila, pero sí con colas.
-    Explica qué relación hay entre estructura auxiliar, estado parcial y correctitud.
-    Explica qué diferencia conceptual hay entre "resolver un problema" y "simular un proceso".
+ El control de flujo en la ejecución de un programa requiere recordar "dónde estaba antes de desviarme". Una pila resuelve esto de forma natural porque preserva el contexto inverso. Cuando el algoritmo avanza en un subproblema (como analizar un paréntesis interno o explorar un camino en Maze.h), el estado anterior queda pausado justo debajo. Al terminar la subtarea actual, el elemento superior de la pila (top) te devuelve de inmediato al contexto inmediato anterior.
+
+3. Explica por qué `Queue` modela naturalmente procesos de espera y atención.
+
+ Porque la cola garantiza la equidad cronológica y simula el paso del tiempo de forma secuencial. En BankSimulation.h, los clientes se procesan exactamente en el orden en que llegan. Si usáramos una pila, el último cliente en llegar sería atendido primero, dejando al primer cliente esperando indefinidamente (un fenómeno algorítmico conocido como inanición o starvation). La cola asegura que los recursos se distribuyan respetando el orden de arribo.
+
+4. Explica qué significa reemplazar recursión implícita por una estructura 
+explícita.
+
+  Cuando usas una función recursiva (como en convertRecursive), la computadora utiliza una pila oculta llamada pila de llamadas del sistema (Call Stack) para recordar las variables locales de cada paso.
+
+  Reemplazar la recursión por una estructura explícita (como se hace en NQueens.h o Maze.h) significa que tú, como programador, asumes el control de esa memoria creando un objeto Stack<T> en el heap o en el stack local.
+
+   - Ventaja: Evitas el riesgo de un Stack Overflow (el límite de la pila del sistema suele ser muy estricto).
+
+   - Control: Puedes inspeccionar, depurar o modificar el historial del algoritmo en cualquier momento porque la pila es una variable más de tu código.
+5. Explica qué información mínima debe guardarse para que una pila permita reconstruir una solución parcial.
+
+ Para poder reconstruir el camino o deshacer pasos (backtracking), cada elemento guardado en la pila debe contener, como mínimo:
+
+   1. El estado o posición actual: (Por ejemplo, las coordenadas (x, y) en Maze.h o la fila/columna de la reina en Queen.h).
+
+   2. El historial de decisiones locales / Siguiente opción a probar: Necesitas saber qué alternativas ya exploraste y cuál sigue. En Maze.h, esto se logra mediante el enumerador ESWN outgoing, que guarda qué dirección se intentó tomar antes de pausar o retroceder. Sin esto, el algoritmo entraría en un bucle infinito al regresar a un estado previo.
+
+6. Compara la conversión de base recursiva e iterativa: ¿qué comparten y qué cambia en el control del proceso?
+
+ - **Qué comparten:** Ambas usan la misma lógica matemática (divisiones sucesivas por la base y almacenamiento de residuos mediante el arreglo digit[]). El orden en que se calculan los dígitos es inverso al orden en que deben imprimirse.
+
+ - **Qué cambia en el control:** * La versión recursiva delega el almacenamiento en la pila de llamadas del sistema operativo durante la fase de ida, y el objeto Stack<char> se va llenando a medida que la recursión "despierta" en el retorno.
+
+   - La versión **iterativa** controla el proceso mediante un bucle while explícito y va guardando activamente los residuos en tu estructura Stack<char> de inmediato. Al final, ambas usan popAll para invertir el resultado final.
+
+7. Explica por qué la verificación iterativa de paréntesis necesita almacenar aperturas pendientes.
+
+ Porque los símbolos de agrupación operan bajo una regla de anidación simétrica (el último que se abre debe ser el primero que se cierre). Cuando el código en Parentheses.h encuentra un cierre (como ]), el algoritmo no tiene ojos en la espalda para saber si es válido; necesita comprobar si el último paréntesis abierto sin emparejar coincide exactamente con ese tipo. Al guardar las aperturas en una pila, el carácter correcto para validar el cierre siempre estará en el top().
+
+8. Explica por qué el evaluador de expresiones necesita dos pilas y no una sola.
+
+ El algoritmo de evaluación de expresiones (basado en el algoritmo de Shunting-yard de Dijkstra en ExpressionEvaluator.h) procesa dos tipos de entidades con reglas de negocio completamente distintas:
+
+   1. Pila de Operandos (Stack<double>): Guarda los números (valores listos para ser operados).
+
+   2. Pila de Operadores (Stack<char>): Guarda los operadores pendientes (+, *, ^, ( ) debido a que su ejecución está condicionada por la jerarquía y precedencia matemática.
+
+ No pueden mezclarse en una sola pila lineal de manera simple porque un operador de alta prioridad (como *) puede aparecer después de uno de baja prioridad (como **+**), obligando al algoritmo a posponer la ejecución del **+** y mantenerlo en espera mientras extrae operandos para calcular primero la multiplicación. Separar los datos (operandos) del control (operadores) permite aplicar la matriz de prioridades de **OperatorPriority.h** de forma limpia y precisa.
+
+9. Explica por qué N-Reinas y laberinto son ejemplos naturales de backtracking.
+
+ El **backtracking** (o búsqueda con retroceso) es una estrategia algorítmica que se usa para resolver problemas donde se debe encontrar una solución válida dentro de un conjunto enorme de opciones combinatorias, construyendo la respuesta **paso a paso** y descartando caminos apenas se detecta que no tienen salida.
+   - **En N-Reinas** (NQueens.h): El problema consiste en colocar $N$ reinas sin que se ataquen. El algoritmo coloca la primera reina en la fila 0, columna 0, y avanza a la fila 1. Si en la fila actual una posición entra en conflicto con las reinas anteriores (verificado por conflictsWithAny), la descarta de inmediato. Si llega a una fila donde ninguna columna es válida, se da cuenta de que las decisiones anteriores fueron erróneas. El backtrack ocurre al sacar la reina de la fila anterior (solution.pop()) y moverla a la siguiente columna disponible para reintentar desde ahí
+   - **En el Laberinto** (Maze.h): Para ir desde un inicio hasta un destino, el algoritmo elige una dirección (por ejemplo, EAST). Avanza celda por celda marcando el camino como ROUTE. Si topa con una pared o con un callejón sin salida donde todas las direcciones apuntan a NO_WAY, el algoritmo retrocede. Al hacer path.pop(), desanda el camino y marca la celda como BACKTRACKED para no volver a cometer el mismo error, regresando a la bifurcación anterior para probar una ruta alternativa.
+
+10. Explica por qué la simulación bancaria no se modela bien con pila, pero sí con colas.
+
+ La elección de la estructura de datos cambia drásticamente las reglas del negocio y el comportamiento del sistema que se intenta representar:
+
+   - **Por qué NO con una Pila**: Si modeláramos las ventanillas del banco con pilas (Stack), el comportamiento sería sumamente injusto y destructivo para el negocio. El último cliente en llegar a la fila sería el primero en ser atendido (LIFO). Aquellos clientes que llegaron temprano quedarían atrapados al fondo de la pila, y mientras sigan llegando personas, su tiempo de espera tendería al infinito (inanición o starvation). Ningún sistema de atención real sobrevive bajo esta premisa.
+
+   - **Por qué SÍ con Colas**: El servicio bancario se rige bajo el principio de equidad cronológica. Una cola (Queue) garantiza que el orden de atención respete estrictamente el orden de llegada (FIFO). En BankSimulation.h, esto permite medir con precisión métricas reales de rendimiento: el tiempo promedio de espera, cuántos clientes se acumulan en las horas pico y la eficiencia de las ventanillas al despachar a los clientes en el orden en que sacrificaron su tiempo al formarse.
+
+11. Explica qué relación hay entre estructura auxiliar, estado parcial y correctitud.
+
+   - **Estado Parcial:** Representa la instantánea o "fotografía" de la solución en un momento dado (por ejemplo, el vector con la posición de las primeras 3 reinas colocadas, o la ruta de celdas recorridas hasta la mitad del laberinto).
+
+   - **Estructura Auxiliar:** Es el contenedor físico (la pila Stack o la cola Queue) que almacena y organiza de forma secuencial esos estados parciales o las decisiones pendientes del algoritmo.
+
+   - **Correctitud:** Es la garantía matemática de que el algoritmo llegará a la solución correcta (si existe) o informará con certeza que no hay solución, sin quedarse atrapado en bucles infinitos.
+
+ **La relación entre ellos:** La estructura auxiliar es la encargada de salvaguardar el estado parcial de manera inviolable. En problemas de búsqueda, si el algoritmo mete la pata y toma un camino inválido, la correctitud depende enteramente de que la estructura auxiliar (Stack) sea capaz de devolver el estado parcial previo exactamente como estaba antes del error. Si la estructura pierde información o altera el orden del estado parcial, el algoritmo pierde el hilo de dónde se encontraba, rompiendo la correctitud y fallando en resolver el problema.
+
+12. Explica qué diferencia conceptual hay entre "resolver un problema" y "simular un proceso".
+
+| Criterio | Resolver un problema | Simular un proceso |
+| :--- | :--- | :--- | 
+| Objetivo Principal | Encontrar una respuesta óptima o exacta que cumpla con restricciones lógicas o matemáticas rigurosas. | Replicar el comportamiento de un sistema real a lo largo del tiempo para estudiar su rendimiento y variabilidad. |
+| El rol del Tiempo | El tiempo no forma parte de la solución. Solo importa la velocidad de cómputo del algoritmo (complejidad temporal). | El tiempo es una variable fundamental del modelo. El algoritmo avanza paso a paso (now++) emulando segundos, minutos o ciclos de reloj. |
+| Naturaleza | Determinista o Combinatoria: La expresión 2 + 3 * 4 siempre debe dar 14. Las soluciones de N-Reinas son finitas y exactas. | Estocástica (Aleatoria): Depende de distribuciones de probabilidad (como en tu código, donde la llegada de clientes y sus tiempos de atención se definen mediante un generador std::mt19937). |
+| Resultado final | Un valor único, un camino específico o un "Sí/No" rotundo. | Una colección de datos estadísticos o un historial de eventos (timeline) para analizar promedios, mínimos y máximos. |
+
 #### Bloque 2 -Demostración y trazado guiado
 1.  En demo_stack_queue.cpp, ¿qué parte de la salida deja más clara la diferencia entre tope y frente?
 
@@ -68,3 +127,91 @@ Responde:
   Expresion en RPN = 0 ! 1 + 2 3 ! 4 + ^ * 5 ! 67 - 8 9 + - -
  Valor = 220
  Soluciones de N-Reinas(4) = 2
+
+#### Bloque 3 - Pruebas públicas, pruebas internas y correctitud
+1. ¿Qué operaciones mínimas valida la prueba pública para `Stack`?
+
+  La prueba pública valida el ciclo de vida básico y el comportamiento LIFO del contenedor mediante:
+
+   - **empty():** Verifica que inicialmente está vacía y que vuelve a estarlo al final.
+
+   - **push(value):** Inserta elementos en la pila (**5** y luego **9**).
+
+   - **top():** Inspecciona el elemento superior sin extraerlo (valida que sea **9**).
+
+   - **pop():** Extrae elementos garantizando el orden inverso de inserción (primero sale **9**, luego **5**).
+
+2. ¿Qué operaciones mínimas valida la prueba pública para `Queue`?
+
+ Valida el comportamiento FIFO secuencial de la cola mediante:
+
+   - **empty():** Revisa el estado de vacuidad inicial y final.
+
+   - **enqueue(value):** Inserta tres elementos secuenciales (**1**, **2**, **3**).
+
+   - **front():** Inspecciona el primer elemento en espera sin removerlo (valida que sea **1**).
+
+   - **dequeue():** Extrae y retorna los elementos en el orden exacto en que llegaron (**1**, luego **2**, y finalmente **3**).
+
+3. ¿Qué valida la prueba pública sobre conversión de base?
+
+  Valida la equivalencia de resultados entre ambos enfoques de control: toma  el número decimal **12345**, lo convierte a base octal (base **8**) usando **toBaseRecursive** y **toBaseIterative**, y mediante un **assert** confirma que ambas estrategias producen exactamente la misma cadena de texto: **"30071"**.
+
+4. ¿Qué valida la prueba pública sobre paréntesis balanceados?
+
+ - Casos correctos: result1 (recursivo) valida paréntesis simples balanceados (a+(b*(c+d))). result2 (iterativo) valida el soporte combinado y anidamiento correcto de paréntesis, corchetes y llaves (a+(b*[c-{d/e}])).
+
+ - Caso incorrecto: result3 (iterativo) valida que la función detecte el cruce inválido de símbolos (([)]), el cual tiene los caracteres correctos pero en un orden de cierre asimétrico.
+
+5. ¿Qué valida la prueba pública sobre evaluación de expresiones y RPN?
+
+ Somete al evaluador a una expresión aritmética compleja: "(0!+1)*2^(3!+4)-(5!-67-(8+9))". Valida:
+
+   - **Conversión a Notación Posfija (RPN):** Que el orden de los tokens resultantes sea exactamente "0 ! 1 + 2 3 ! 4 + ^ * 5 ! 67 - 8 9 + - -".
+
+   - **Precisión Matemática:** Que la reducción de operadores unarios (factoriales !), potencias (^), agrupaciones y signos aritméticos de un valor flotante idéntico a 2012.0 (controlando la tolerancia de precisión con 1e-9).
+
+6. ¿Qué valida la prueba pública sobre `NQueens`?
+
+ Valida el cálculo combinatorio para el caso clásico de $N = 4$. Verifica que el algoritmo iterativo de backtracking encuentre exactamente el número de soluciones teóricas 
+ **(queens.solutions == 2)** y que la longitud de la lista de tableros válidos devueltos 
+ **(placements.size())** coincida con este número.
+
+7. ¿Qué valida la prueba pública sobre `Maze`?
+
+ Configura una cuadrícula de texto de 5 x 5 donde existe un camino despejado entre las coordenadas de inicio **(1, 1)** y destino **(3, 3)**. Valida que la función **findPath**:
+   1. No devuelva una ruta vacía (**!path.empty()**).
+   2. El punto de partida de la ruta coincida estrictamente con el origen solicitado (**path.front() == (1,1)**).
+   3. El punto de llegada coincida estrictamente con el destino deseado (**path.back() == (3,3)**).
+
+8. ¿Qué valida la prueba pública sobre `bestWindow` en la simulación bancaria?
+
+  Prueba la lógica de la cola más corta. Modela un banco con 3 ventanillas: la ventanilla 0 tiene dos clientes en espera, la ventanilla 1 tiene un cliente, y la ventanilla 2 está completamente vacía (0 clientes). El **assert** valida que la función elija correctamente el índice 2 por ser la opción óptima con menor carga de trabajo.
+
+9. ¿Qué casos adicionales cubre la prueba interna y no aparecen de forma explícita en la pública?
+
+ El archivo **test_internal_week4.cpp** actúa como una batería de pruebas de robustez ("stress cases" y límites) que la pública no toca:
+
+   - **Límites de Frontera:** Valida la conversión con el número **0** (**toBaseRecursive(0, 2) == "0"**).
+
+   - **Manejo de Errores y Excepciones:**  Despara intencionalmente un fallo al intentar convertir a una base inválida (**base 1**), y verifica mediante un bloque **try-catch** que el sistema lance un error del tipo **std::invalid_argument**.
+
+   - **Cadenas Vacías o sin Símbolos**: Valida que una cadena de texto plana sin paréntesis ("sin parentesis") sea procesada como balanceada (true).
+
+   - **Paréntesis de Cierre Huérfanos**: Valida el caso donde hay cierres antes de aperturas (")()("), forzando un error de subdesbordamiento (underflow) en la pila que el algoritmo debe capturar devolviendo false.
+
+   - **Laberinto sin Salida**: Modela una grilla donde el destino está completamente bloqueado por paredes (**#**), validando que **findPath** devuelva una ruta vacía de forma segura en lugar de ciclarse.
+
+   - **Signos Unarios**: Verifica el procesamiento correcto del signo menos en números negativos al inicio de la expresión (**"-3+5"**).
+
+10. ¿Por qué pasar pruebas no reemplaza una explicación de invariantes, estado y complejidad?
+
+ Las pruebas unitarias (como los asserts) son comprobaciones puntuales de caja negra para un conjunto finito de datos de entrada. No reemplazan la fundamentación teórica por tres razones:
+   1. **La Complejidad es Invisible para los Asserts:** Una prueba para $N=4$ reinas pasa en microsegundos tanto si el código tiene una complejidad de    O(2^N) como si tiene un error de diseño que lo degrada a O(N!). Las pruebas no miden cómo escala el algoritmo con datos masivos.
+   2. **No Garantizan Invariantes de Estructura:** Un test puede pasar "de casualidad" debido a la suerte con una semilla aleatoria (**seed = 123U**), ocultando que bajo ciertas condiciones la estructura viola sus propiedades (por ejemplo, que la simulación bancaria corrompa la memoria si dos clientes llegan al mismo tiempo).
+   3. **Falta de Demostración Formal:** Las pruebas confirman que el código funciona para los ejemplos dados, pero no explican por qué funciona ni demuestran que el estado interno se mantiene consistente en todas las transiciones lógicas del programa.
+
+11. Da un ejemplo de un error conceptual que podría sobrevivir si solo se ejecutaran los casos mínimos.
+ Imagina que en ExpressionEvaluator.h, al implementar la matriz de prioridades en OperatorPriority.h, cometes el error de asignar la misma prioridad y asociatividad al operador de suma (+) y al de potencia (^).
+
+ Si ejecutas una prueba mínima o lineal como 3+4*2 (que solo evalúa suma contra multiplicación), la prueba pasará con éxito porque el error está oculto en otro operador. Incluso una expresión como 2^3+4 podría pasar si los operandos no fuerzan la ambigüedad. Sin embargo, en el momento en que el sistema real intente evaluar una expresión combinada como 2^3^2 o 5+2^3, el algoritmo romperá las reglas de la matemática e introducirá un error de cálculo masivo en producción. Las pruebas mínimas validan el "camino feliz", pero solo la comprensión profunda de las invariantes y los casos límite protegen contra fallos conceptuales.
