@@ -405,5 +405,22 @@ explícita.
    - “aleatoria” elegiría una ventanilla al azar.
     Eso modificaría la distribución de carga entre ventanillas y el comportamiento de congestión final.
 
+#### Bloque 8 - Cierre comparativo y preparación de sustentación
 
+**¿Qué cambia cuando pasamos de "usar pilas y colas como ADTs básicos" a "usarlas como mecanismos de control para resolver problemas"?**
+
+Al pasar de “usar pilas y colas como ADTs básicos” a “usarlas como mecanismos de control para resolver problemas”, cambia el enfoque: ya no se trata solo de conocer operaciones push/pop o enqueue/dequeue, sino de emplear su comportamiento para modelar y dirigir la resolución.
+
+  - LIFO y FIFO: una pila impone LIFO y sirve cuando importa “lo último pendiente” (por ejemplo, volver atrás o procesar operadores recientes), mientras que una cola impone FIFO y modela procesos donde el orden de llegada define el orden de servicio.
+ - Recursión implícita vs estructura explícita: muchas soluciones recursivas usan la pila de llamadas implícita; cuando hacemos toBaseIterative o parenIterative, esa misma lógica se controla con una pila explícita y el programa hace visible el estado parcial.
+ - Evaluación de expresiones: aquí las pilas no son solo un contenedor, son el mecanismo de control que maneja operandos, operadores, prioridades y la conversión a RPN; sin pilas, la correlación entre orden de lectura y orden de cálculo se pierde.
+ - Backtracking: en N-Reinas y laberinto, la pila controla los estados parciales y permite deshacer decisiones. El algoritmo explora una rama, guarda lo pendiente y, al fallar, retrocede exactamente a la configuración anterior.
+ - Simulación: en la simulación bancaria la cola controla la dinámica temporal del servicio. No es solo un objeto; es la forma de mantener el orden real de clientes en cada ventanilla y de construir el estado de todo el sistema.
+ - Correctitud experimental: usar pilas y colas como mecanismos de control implica validar con ejemplos y pruebas porque la lógica de estado y transición es más compleja. Los experimentos muestran que el comportamiento observado coincide con la intención del diseño y ayudan a defender que el algoritmo es correcto.
+ - Comparación entre problemas:
+      - Conversión de base usa la pila para invertir residuos (LIFO en el resultado).
+      - Paréntesis usa la pila para almacenar aperturas pendientes y verificar coincidencias.
+      - N-Reinas usa backtracking con una pila de posiciones y comprobaciones parciales.
+      - Laberinto usa un recorrido con marcado/desmarcado que funciona como una pila de decisiones de camino.
+      - Banco usa colas para modelar atención FIFO y carga en ventanillas.
 
