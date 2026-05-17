@@ -152,10 +152,14 @@ Nombre: Joel Gustavo Carhuarica Aguilar
    
    capacidad total = 1+2+3+4+5 = r(r+1)/2 = 5×6/2 = 15 (índices 0 a 14)
 
-   r=0 o Bloque 0 (tamaño 1): [ 0 ]  
+   r=0 o Bloque 0 (tamaño 1): [ 0 ]
+
    r=1 o Bloque 1 (tamaño 2): [ 1 | 2 ]
+   
    r=2 o Bloque 2 (tamaño 3): [ 3 | 4 | 5 ]
+   
    r=3 o Bloque 3 (tamaño 4): [ 6 | 7 | 8 | 9 ]
+   
    r=4 o Bloque 4 (tamaño 5): [ 10 | 11 | 12 | 13 | 14 ]
 
 `**b) Para los indices i=0,1,2,5,9,14, indique el bloque y el desplazamiento dentro del bloque.**`
@@ -199,7 +203,7 @@ Nombre: Joel Gustavo Carhuarica Aguilar
    
    | Aspecto | ArrayStack | RootishArrayStack | 
    | :--- | :--- | :--- | 
-   | Acceso get(i) | a[i] O(1) puro, un solo derreferenciamiento | blocks[b][j] — O(1) con costo aritmético: calcular b y j vía i2b() implica una raíz cuadrada y un ceil |
+   | Acceso get(i) | a[i] O(1) puro, un solo derreferenciamiento | blocks[b][j]  O(1) con costo aritmético: calcular b y j vía i2b() implica una raíz cuadrada y un ceil |
    | Lo que se conserva | O(1) asintotico | O(1) asintótico (igual de rápido en teoría) |
    | Costo adicional | Ninguno | Dos indirecciones: primero blocks[b], luego [j]; más las operaciones de sqrt y ceil en cada acceso |
    | Cache locality | Excelente (un arreglo contiguo) | Peor: los bloques están dispersos en memoria |
@@ -230,4 +234,92 @@ Nombre: Joel Gustavo Carhuarica Aguilar
 
   La diferencia crucial con ArrayStack::resize() es que aquí nunca se copian todos los elementos al crecer o encoger: solo se agrega o elimina un bloque. Eso hace que grow() sea O(√n) en vez de O(n).
 
+#### Pregunta 4
+
+front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 20, 30, 40, 50, 60, 70] —> índices 0 al 6.
+
+`**a) Muestre como se calcula get(i) para i=0,2,3,6.**`
+
+  get(i) para i = 0, 2, 3, 6
    
+  Si recordamos en la semana 2 el DualArrayDeque
+  La regla del código es:
+  
+  ```C++
+  if (i < front.size())  →  front.get(front.size() - i - 1)
+  else                   →  back.get(i - front.size())
+  ```
+  
+  Con front.size() = 3:
+
+  | i | ¿i<3? | Calculo | Resultado | 
+  | :--- | :--- | :--- | :--- |
+  | 0 | Si | front.get(3-0-1) = front[2] = 10 | 10 |
+  | 2 | Si | front.get(3-2-1) = front[0] = 30 | 30 |
+  | 3 | No | back.get(3-3) = back[0] = 40 | 40 |
+  | 6 | No | back.get(6-3) = back[3] = 70 | 70 |
+
+`**b) Ejecute add(1,15) y add (6,55) indicando en cual arreglo se inserta y como cambia la representacion**`
+ 
+ add(1, 15) —> i=1 < front.size()=3, va a front:
+
+ front.add(front.size() - i, x)  =  front.add(3-1, 15)  =  front.add(2, 15)
+
+ **front**pasa de [30,20,10] a [30,20,15,10].
+ Secuencia lógica: [10, 15, 20, 30, 40, 50, 60, 70] —> ahora n=8, front.size()=4.
+
+ add(6, 55) —> sobre la nueva secuencia de 8 elementos, i=6 >= front.size()=4, va a back:
+ 
+ back.add(i - front.size(), x)  =  back.add(6-4, 55)  =  back.add(2, 55)
+
+ **back** pasa de [40,50,60,70] a [40,50,55,60,70].
+ Secuencia lógica: [10, 15, 20, 30, 40, 50, 55, 60, 70].
+
+`**c) Explique porque front guarda su contenido en orden inverso.**`
+
+ Porque **front** representa el extremo izquierdo de la deque y se opera por su extremo derecho (que es el extremo más eficiente de un **ArrayStack**). Si guardáramos front en orden normal **[10, 20, 30]**, añadir al frente de la deque (índice 0) requeriría insertar al inicio del arreglo, desplazando todos los elementos — O(n). Al guardarlo invertido **[30, 20, 10]**, el elemento lógico **i=0** (que es **10**) está en **front[last]**, y agregar/quitar al frente de la deque equivale a un **push/pop** al final del **ArrayStack**, que es O(1) amortizado.
+
+`**d) Defina una condicion razonable de balance entre front y back. Explique que debe hacer balance() cuando se viola.*`
+
+ Una condición razonable es que ninguno de los dos arreglos tenga más de 3 veces el tamaño del otro:
+
+ NO desbalanceado:
+
+  front.size() ≤ 3 × back.size()
+  
+  back.size()  ≤ 3 × front.size()
+
+ El código lo verifica como:
+ 
+ Si nos vamos de nuevo al DualArrayDeque.h, nos fijamos que :
+
+ ```C++
+ if (3*front.size() < back.size() || 3*back.size() < front.size())
+  ```
+ Cuando se viola, **balance()** redistribuye todos los **n** elementos equitativamente:
+
+ - Calcula **nf = n/2** (mitad para front) y nb = n - nf (resto para **back**).
+ - Reconstruye **front** con los primeros **nf** elementos lógicos, en orden inverso.
+ - Reconstruye **back** con los **nb** elementos restantes, en orden normal.
+ - El costo es O(n) pero ocurre raramente.
+
+`**e) Justifique que el rebalanceo puede mantener costos amortizados aceptables si no ocurre en cada operacion.**`
+
+ **balance()** cuesta O(n), pero solo puede dispararse después de que se hayan hecho al menos n/3 operaciones desde el último balance. Para que un arreglo triplique al otro partiendo de un estado balanceado, necesitas insertar o eliminar por lo menos **n/3** veces del mismo lado. Eso significa que hay al menos **n/3** operaciones "baratas" que "pagan" el costo del rebalanceo.
+
+ Formalmente: cada operación deposita crédito O(1). Cuando se acumulan suficientes créditos (al menos O(n) acumulados), se dispara el balance de costo O(n) exactamente cubierto. El resultado es O(1) amortizado por operación a pesar de que el rebalanceo individual sea O(n).
+
+ Si **balance()** se llamara en cada operación, el costo sería O(n) por operación y todo se arruinaría. La condición **3×** garantiza que el rebalanceo sea infrecuente, preservando el costo amortizado.
+
+
+
+ 
+
+
+
+
+
+
+
+
+
