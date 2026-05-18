@@ -434,11 +434,11 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
 
  Primero hay que encontrar x (O(n)), luego eliminarlo.
  
- En **ArrayStack**, encontrar el índice es O(n), luego **remove(i)** desplaza los elementos siguientes, O(n) en el peor caso. Resultado: O(n).
+     En **ArrayStack**, encontrar el índice es O(n), luego **remove(i)** desplaza los elementos siguientes, O(n) en el peor caso. Resultado: O(n).
  
- En **RootishArrayStack**, encontrar es O(n), y **remove(i)** también desplaza con **set/get** sobre bloques. Resultado: O(n).
+     En **RootishArrayStack**, encontrar es O(n), y **remove(i)** también desplaza con **set/get** sobre bloques. Resultado: O(n).
  
- En **SLList**, encontrar el nodo previo al que se quiere eliminar es O(n), luego el enlace se reencadena en O(1). Resultado: O(n) igual, pero con mejor constante al no desplazar elementos físicamente.
+     En **SLList**, encontrar el nodo previo al que se quiere eliminar es O(n), luego el enlace se reencadena en O(1). Resultado: O(n) igual, pero con mejor constante al no desplazar elementos físicamente.
 
  Tabla resumida: 
   | Operacion | **ArrayStack** | RootishArrayStack | SLList |
@@ -477,15 +477,142 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
  - Si se encuentra un duplicado, se llama a **removeOne** sobre la posición **i** y se repite el chequeo en la misma posición **i** (que ahora tiene el siguiente elemento).
  - Si no se encuentra duplicado, se avanza **i**.
 
-Análisis de costo:
+ Análisis de costo:
 
-Para cada uno de los **n** elementos, la búsqueda hacia atrás recorre hasta i elementos -> costo O(i). Sumando sobre todos los índices:
+ Para cada uno de los **n** elementos, la búsqueda hacia atrás recorre hasta i elementos -> costo O(i). Sumando sobre todos los índices:
 
-  costo total = O(0) + O(1) + O(2) + ... + O(n-1) = O(n²)
+   costo total = O(0) + O(1) + O(2) + ... + O(n-1) = O(n²)
 
-Además, cada **removeOne** desplaza elementos (en **ArrayStack** o **RootishArrayStack**) con costo O(n), lo que no cambia el orden asintótico pero sí la constante.
+ Además, cada **removeOne** desplaza elementos (en **ArrayStack** o **RootishArrayStack**) con costo O(n), lo que no cambia el orden asintótico pero sí la constante.
 
-En conclusion sin las estructuras iniciales como tablas hash,**uniqueStable()** tiene costo O(n²) en cualquiera de las tres representaciones, porque la búsqueda de duplicados requiere comparar cada elemento con todos los anteriores.
+ En conclusion sin las estructuras iniciales como tablas hash,**uniqueStable()** tiene costo O(n²) en cualquiera de las tres representaciones, porque la búsqueda de duplicados requiere comparar cada elemento con todos los anteriores.
+
+#### Pregunta 7
+
+**`a) Defina ADT con precondiciones y comportamiento observable.`**
+
+  | Operacion | Precondicion | Comportamiento observable | 
+  | :--- | :--- | :--- | 
+  | apply(x) | ninguna | Agrega el estado x al final. El estado actual pasa a ser x. size() aumenta en 1. |
+  | undo() | size() >= 2 | Elimina el estado más reciente. El estado actual pasa a ser el anterior. size() disminuye en 1. |
+  | current() | size() >= 1 | Retorna el estado actual (el último no deshecho). No modifica el historial. | 
+  | size() | ninguna | Retorna la cantidad de estados almacenados. Siempre ≥ 0. |
+  | clear() | ninguna | Elimina todos los estados. size() pasa a 0. Después current() queda indefinido. |
+
+**`b) Proponga dos representaciones: una basada en arreglo dinamico y otra basada en lista enlazada. Indique sus invariantes.`**
+
+ Representación 1 
+ Arreglo dinámico (**ArrayStack**)
+ 
+  Se usa un **ArrayStack<T>** donde los estados se apilan cronológicamente. El índice **n-1** es siempre el estado actual. **apply** empuja al final, **undo** elimina el último.
+
+     Índices:  [  0  |  1  |  2  |  3  ]
+     Estados:  [ E0  | E1  | E2  | E3  ]
+                                    
+                           current = a[n-1]
+
+ Invariantes de la representación:
+  - **a[0..n-1]** contiene los estados en orden cronológico estricto.
+  - **n >= 0** siempre.
+  - Si **n > 0**, el estado actual es exactamente **a[n-1]**.
+  - La capacidad satisface **n <= a.length <= 3*n** (condición del **resize** de **ArrayStack)**.
+  - Los slots **a[n..a.length-1]** son basura y nunca se leen.
+ 
+ Representacion 2
+ Lista enlazada (**SLList**)
+ 
+ Se usa una **SLList<T>** donde **head** apunta al estado más antiguo y **tail** apunta al estado actual. **apply** agrega al final en O(1) gracias al puntero **tail**. **undo** requiere llegar al penúltimo nodo para actualizar **tail**.
+
+     head -> [E0] -> [E1] -> [E2] -> [E3] -> nullptr
+                              
+                                  tail = current
+
+ Invariantes de la representación:
+
+  - Los nodos están en orden cronológico desde **head** hasta **tail**.
+  - **tail** apunta siempre al estado actual cuando **n > 0**.
+  - Si **n == 0**, tanto **head** como **tail** son **nullptr**.
+  - No hay ciclos: seguir **next** desde **head** llega a **nullptr** en exactamente **n** pasos.
+  - No existe puntero **prev**: retroceder requiere recorrer desde **head**.
+
+**`c) Compare costos de apply, undo, current y clear.`**
+
+ **apply(x)**:
+
+ Con **ArrayStack**: se traduce en **add(n, x)**  inserta al final sin desplazar ningún elemento. Si el arreglo está lleno se llama **resize()** que copia todos los elementos, pero esto ocurre con frecuencia decreciente. Costo: O(1) amortizado.
+ 
+ Con **SLList**: se crea un nuevo nodo y se enlaza a **tail->next**, luego **tail = nuevo nodo**. Nunca hay copia ni redimensionamiento. Costo: O(1) estricto.
+
+ **undo():**
+
+ Con **ArrayStack**: se traduce en **remove(n-1)** elimina el último elemento, decrementa **n**, y puede llamar **resize()** si **a.length >= 3*n**. No hay desplazamiento de elementos. Costo: O(1) amortizado.
+ 
+ Con **SLList**: **tail** apunta al último nodo pero no hay puntero **prev**. Para actualizar **tail** al penúltimo hay que recorrer toda la lista desde **head** hasta encontrar el nodo cuyo **next == tail**. Costo: O(n).
+ 
+ **current():**
+
+ Con **ArrayStack**: retorna **a[n-1]**  acceso directo por índice. Costo: O(1).
+
+ Con **SLList**: retorna **tail->x**  acceso directo al puntero de cola. Costo: O(1).
+
+ **clear():**
+
+ Con **ArrayStack**: resetea **n = 0** y reemplaza el arreglo por uno de tamaño 1. La memoria del arreglo antiguo se libera automáticamente. Costo: O(1) (o O(n) si T tiene destructores no triviales).
+
+ Con **SLList**: hay que recorrer todos los nodos y liberar cada uno con **delete**. Costo: O(n).
+
+ Tabla resumida:
+  | Operacion | ArrayStack | SLList | 
+  | :--- | :--- | :--- | 
+  | apply(x) | O(1) amort. | O(1) estricto |
+  | undo() | O(1) amort. | O(n) |
+  | current() | O(1) | O(1) |
+  | clear() | O(1) | O(n) |
+
+**`d) Explique como manejaria el caso de deshacer hasta quedar sin estado previo.`**
+
+ Este es el caso en que size() == 1 y se intenta llamar undo(). La precondición exige size() >= 2, por lo que hay dos estrategias posibles:
+
+ Estrategia 1 
+ Lanzar error o hacer nada (defensivo):
+ Si **size() < 2**, **undo()** simplemente no hace nada y retorna sin modificar el historial. Se puede acompañar de un valor booleano de retorno que indique si el **undo** fue exitoso o no. Así el estado inicial queda siempre protegido.
+   
+     Historial: [ E0 ] -> undo() no hace nada, current() sigue retornando E0
+
+ Estrategia 2
+ Estado vacío permitido:
+ Se relaja la precondición a **size() >= 1**. Al deshacer el único estado, el historial queda vacío (**size() == 0**) y **current()** queda indefinido hasta que se llame **apply()** de nuevo. Esta estrategia requiere que el código cliente verifique **size() > 0** antes de llamar **current()**.
+
+ Ahora aca la Estrategia 1 es la mas segura porque mantiene siempre un estado valido en el historial. 
+
+  La implementación con ArrayStack verifica simplemente:
+  
+     si n >= 2 entonces remove(n-1)
+     sino no hacer nada (o señalizar)
+  
+**`e) Proponga pruebas para secuencias largas, estados repetidos y operaciones invalidas.`**
+
+ Para secuencias largas: Se aplican N estados consecutivos (por ejemplo N = 10.000), luego se deshacen todos hasta llegar al primero. Se verifica que **size()** disminuya correctamente en cada **undo()** y que **current()** retorne en cada paso el estado esperado. Esto estresa el **resize()** en **ArrayStack** y el recorrido en **SLList**.
+
+ Para estados repetidos: Se aplican varios estados con el mismo valor, por ejemplo **apply(5)**, **apply(5)**, **apply(5)**. Se verifica que el historial mantenga tres entradas distinta, que **size() == 3**, y que **undo()** elimine una a una correctamente. Esto confirma que la estructura almacena estados y no valores únicos.
+
+ Para operaciones invalidas: Se intenta llamar **undo()** sobre un historial con un solo estado y luego con uno vacío. Se verifica que la operación no corrompa el estado interno, **size()** debe permanecer igual, **current()** debe seguir retornando el mismo valor, y no debe ocurrir ningún acceso a memoria inválida. Esto nos probara que la precondición se maneja correctamente.
+
+**`f) Suponga que ahora se pide consultar cualquier estado por indice. Reevalue su eleccion de estructura y justifique.`**
+
+ El nuevo requisito es **getAt(i)** — acceder al estado i-ésimo del historial en tiempo eficiente.
+
+ Con **ArrayStack**: **getAt(i)** se implementa directamente como **a[i]** ,acceso O(1) por índice directo. No cambia nada en la implementación existente. **ArrayStack** sigue siendo la mejor opción.
+
+ Con **SLList**: **getAt(i)** requiere recorrer **i** nodos desde **head**, costo O(n). Esto hace que **SLList** sea inadecuada para este nuevo requisito.
+ 
+ Con el nuevo requisito de acceso por índice, la representación recomendada es ArrayStack por su simplicidad y O(1) estricto para getAt(i)
+
+
+
+
+
+
 
 
 
