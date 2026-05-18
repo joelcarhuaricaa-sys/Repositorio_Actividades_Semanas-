@@ -3,7 +3,7 @@ Nombre: Joel Gustavo Carhuarica Aguilar
 
 #### Pregunta 2 
 
-`**a)Trace sumRec([2,4,6,8],4) mostrando llamadas y retornos.**`
+**`a)Trace sumRec([2,4,6,8],4) mostrando llamadas y retornos.`**
 
   **Llamadas:**
 
@@ -54,7 +54,7 @@ Nombre: Joel Gustavo Carhuarica Aguilar
 
   Mostrandonos el Resultado final = **20**
 
-`**b) Pruebe correctitud por induccion sobre n.**`
+**`b) Pruebe correctitud por induccion sobre n.`**
 
   Lo que queremos probar: sumRec(A, n) = A[0] + A[1] + ... + A[n-1].
 
@@ -79,7 +79,7 @@ Nombre: Joel Gustavo Carhuarica Aguilar
 
   Por inducción, la función es correcta para todo **n ≥ 0.**
 
-`**c) Analice tiempo y espacio adicional. Distinga memoria del arreglo y pila de llamadas.**`
+**`c) Analice tiempo y espacio adicional. Distinga memoria del arreglo y pila de llamadas.`**
   
   Cada llamada aca hace O(1) trabajo(una suma,una comparacion). La funcion se llama **n+1** veces(desde **n** hasta **0**).
 
@@ -92,7 +92,7 @@ Nombre: Joel Gustavo Carhuarica Aguilar
 
  Observacion: La distinción es importante: la función usa O(1) espacio propio por frame, pero O(n) espacio adicional total por la profundidad de la recursión.
 
-`**d) Escriba una version iterativa equivalente y proponga una invariante del ciclo.**`
+**`d) Escriba una version iterativa equivalente y proponga una invariante del ciclo.`**
 
   Acordanonos lo que avanzamos en la semana 1 del archivo **sum.cpp**
 
@@ -118,7 +118,7 @@ Nombre: Joel Gustavo Carhuarica Aguilar
   
   Observacion: Ventaja de la versión iterativa: usa O(1) de espacio adicional (solo la variable s e i), sin pila de llamadas.
 
-`e) ¿Por qué const int A[] comunica una intención útil para correctitud?`
+**`e) ¿Por qué const int A[] comunica una intención útil para correctitud?`**
 
   Porque el calificador const le dice al compilador y al lector que la función se compromete a no modificar el arreglo. Esto es útil por tres razones:
 
@@ -126,7 +126,7 @@ Nombre: Joel Gustavo Carhuarica Aguilar
   2. Razonamiento más simple: al probar correctitud (como en el inciso b), podemos asumir que A no cambia entre llamadas recursivas. Sin const, tendríamos que verificar además que ninguna llamada altera el arreglo.
   3. Composabilidad: permite pasar arreglos declarados como const sin errores de tipo, haciendo la función más reutilizable.
 
-`**f) Indique dos casos borde y como deberian probarse.**`
+**`f) Indique dos casos borde y como deberian probarse.`**
 
   Caso borde 1 —> arreglo vacío (n = 0):
   
@@ -146,7 +146,7 @@ Nombre: Joel Gustavo Carhuarica Aguilar
 
 #### Pregunta 3
  
-`**a) Para r=5, dibuje los bloques y ubique los indices logicos 0 a 14. **` 
+**`a) Para r=5, dibuje los bloques y ubique los indices logicos 0 a 14.`** 
    
    Bueno recordando la semana 2 que vimos RootishArrayStack.
    
@@ -162,7 +162,7 @@ Nombre: Joel Gustavo Carhuarica Aguilar
    
    r=4 o Bloque 4 (tamaño 5): [ 10 | 11 | 12 | 13 | 14 ]
 
-`**b) Para los indices i=0,1,2,5,9,14, indique el bloque y el desplazamiento dentro del bloque.**`
+**`b) Para los indices i=0,1,2,5,9,14, indique el bloque y el desplazamiento dentro del bloque.`**
 
   La fórmula central es **i2b(i)** que resuelve **b(b+1)/2 ≤ i**:
   
@@ -181,13 +181,13 @@ Nombre: Joel Gustavo Carhuarica Aguilar
 
   una observacion es que los indices 0,5,9,14 son exactamente el último elemento del bloque (j = b), lo que explica que la fórmula da un valor exacto sin necesidad de ceil.
   
-`**c) Explique por que se necesita una funcion i2b(i) o locate (i).**`
+**`c) Explique por que se necesita una funcion i2b(i) o locate (i).`**
    
    A diferencia de **ArrayStack**, donde acceder al elemento **i** es simplemente **a[i]** en O(1) directo, en **RootishArrayStack** la memoria está repartida en bloques separados. No hay un único arreglo contiguo.
 
    **i2b(i)** es como un GPS, resuelve la pregunta: ¿en qué bloque está el índice lógico i, y en qué posición dentro de ese bloque? Sin esta función, sería imposible saber a qué puntero de blocks[] acceder ni con qué índice interno. 
 
-`**d)Justifique por que el espacio desperdiciado es O(√n) cuando hay n elementos.**`
+**`d)Justifique por que el espacio desperdiciado es O(√n) cuando hay n elementos.`**
 
    Con r bloques, la capacidad total es r(r+1)/2. Si hay n elementos entonces r ≈ √(2n).
 
@@ -199,7 +199,7 @@ Nombre: Joel Gustavo Carhuarica Aguilar
 
    Esto es la ventaja clave sobre ArrayStack: cuando ArrayStack hace resize(), puede desperdiciar hasta n/2 slots (O(n)). RootishArrayStack nunca desperdicia más de O(√n), porque los bloques crecen de a uno y son pequeños.
 
-`**e)Compare el acceso por indice con ArrayStack.¿Que se conserva y que costo adicional aparece?.**`
+**`e)Compare el acceso por indice con ArrayStack.¿Que se conserva y que costo adicional aparece?.`**
    
    | Aspecto | ArrayStack | RootishArrayStack | 
    | :--- | :--- | :--- | 
@@ -210,7 +210,7 @@ Nombre: Joel Gustavo Carhuarica Aguilar
 
    En resumidas palabras:  el acceso sigue siendo O(1) pero con una constante mayor por la aritmética de i2b y la doble indirección.
 
-`**f) Explique que ocurre cuando se necesita crecer o reducir el numero de bloques.**`
+**`f) Explique que ocurre cuando se necesita crecer o reducir el numero de bloques.`**
 
   Al crecer —> **grow()**:
 
@@ -238,7 +238,7 @@ Nombre: Joel Gustavo Carhuarica Aguilar
 
 front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 20, 30, 40, 50, 60, 70] —> índices 0 al 6.
 
-`**a) Muestre como se calcula get(i) para i=0,2,3,6.**`
+**`a) Muestre como se calcula get(i) para i=0,2,3,6.`**
 
   get(i) para i = 0, 2, 3, 6
    
@@ -246,8 +246,8 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
   La regla del código es:
   
   ```C++
-  if (i < front.size())  →  front.get(front.size() - i - 1)
-  else                   →  back.get(i - front.size())
+  if (i < front.size())  ->  front.get(front.size() - i - 1)
+  else                   ->  back.get(i - front.size())
   ```
   
   Con front.size() = 3:
@@ -259,7 +259,7 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
   | 3 | No | back.get(3-3) = back[0] = 40 | 40 |
   | 6 | No | back.get(6-3) = back[3] = 70 | 70 |
 
-`**b) Ejecute add(1,15) y add (6,55) indicando en cual arreglo se inserta y como cambia la representacion**`
+**`b) Ejecute add(1,15) y add (6,55) indicando en cual arreglo se inserta y como cambia la representacion.`**
  
  add(1, 15) —> i=1 < front.size()=3, va a front:
 
@@ -275,11 +275,11 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
  **back** pasa de [40,50,60,70] a [40,50,55,60,70].
  Secuencia lógica: [10, 15, 20, 30, 40, 50, 55, 60, 70].
 
-`**c) Explique porque front guarda su contenido en orden inverso.**`
+**`c) Explique porque front guarda su contenido en orden inverso.`**
 
  Porque **front** representa el extremo izquierdo de la deque y se opera por su extremo derecho (que es el extremo más eficiente de un **ArrayStack**). Si guardáramos front en orden normal **[10, 20, 30]**, añadir al frente de la deque (índice 0) requeriría insertar al inicio del arreglo, desplazando todos los elementos — O(n). Al guardarlo invertido **[30, 20, 10]**, el elemento lógico **i=0** (que es **10**) está en **front[last]**, y agregar/quitar al frente de la deque equivale a un **push/pop** al final del **ArrayStack**, que es O(1) amortizado.
 
-`**d) Defina una condicion razonable de balance entre front y back. Explique que debe hacer balance() cuando se viola.*`
+**`d) Defina una condicion razonable de balance entre front y back. Explique que debe hacer balance() cuando se viola.`**
 
  Una condición razonable es que ninguno de los dos arreglos tenga más de 3 veces el tamaño del otro:
 
@@ -303,7 +303,7 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
  - Reconstruye **back** con los **nb** elementos restantes, en orden normal.
  - El costo es O(n) pero ocurre raramente.
 
-`**e) Justifique que el rebalanceo puede mantener costos amortizados aceptables si no ocurre en cada operacion.**`
+**`e) Justifique que el rebalanceo puede mantener costos amortizados aceptables si no ocurre en cada operacion.`**
 
  **balance()** cuesta O(n), pero solo puede dispararse después de que se hayan hecho al menos n/3 operaciones desde el último balance. Para que un arreglo triplique al otro partiendo de un estado balanceado, necesitas insertar o eliminar por lo menos **n/3** veces del mismo lado. Eso significa que hay al menos **n/3** operaciones "baratas" que "pagan" el costo del rebalanceo.
 
@@ -311,14 +311,181 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
 
  Si **balance()** se llamara en cada operación, el costo sería O(n) por operación y todo se arruinaría. La condición **3×** garantiza que el rebalanceo sea infrecuente, preservando el costo amortizado.
 
+#### Pregunta 5
+  
+**`a) Explique la idea de representacion de SEList y como difiere de una DLList simple.`**
 
+ **DLList** almacena cada elemento en un nodo separado:
+
+   dummy <-> [10] <-> [20] <-> [30] <-> [40] <-> dummy
+
+ Cada nodo tiene dos punteros (prev, next) -> overhead de 2 punteros por elemento.
+ Acceso al elemento i cuesta O(n) porque hay que recorrer nodo a nodo.
+
+ **SEList** agrupa los elementos en bloques (pequeños BDeque basados en ArrayDeque), y esos bloques se encadenan en una lista doblemente ligada:
+
+ dummy <-> [10,20,30] <-> [40,50,60] <-> [70,80,90] <-> dummy
+          
+            bloque 0       bloque 1       bloque 2
+ 
+ Cada bloque tiene capacidad b+1. Los punteros se pagan una vez por bloque, no por elemento. El acceso a **i** primero salta de bloque en bloque (O(n/b)) y luego indexa dentro del bloque (O(b)) -> total O(b + n/b).
+
+**`b) Indique que invariante deberia cumplirse sobre el tamaño de los bloques, salvo quiza en extremos.`**
+
+ Todo bloque interior (no el primero ni el último) debe tener exactamente b elementos:
+  
+    b ≤ bloque_interior.size() ≤ b+1
+
+ Más precisamente, en el código la capacidad máxima de cada BDeque es b+1. La invariante útil es:
+
+ - Bloques interiores: exactamente **b** elementos (llenos).
+ - Extremos (primer y último bloque): pueden tener entre **1** y **b+1** elementos, son los únicos que pueden estar parcialmente llenos.
+
+ Esto garantiza que con r bloques el total de elementos es aproximadamente r·b, y el overhead de punteros es O(r) = O(n/b).
+
+**`c) Describa que ocuree al insertar en un bloque lleno:busqueda de espacio, desplazamientos entre bloques o creacion de bloque nuevo.`**
+
+ Cuando add(i, x) encuentra que el bloque destino tiene b+1 
+ elementos (lleno), el código busca espacio así:
+
+ Primero haremos búsqueda hacia adelante: recorre hasta b bloques siguientes buscando uno con **size() < b+1**. Si lo encuentra en **r < b** pasos, hace un efecto dominó hacia atrás: mueve el último elemento de cada bloque al inicio del siguiente, abriendo un hueco en el bloque destino.
+
+  [A B C|] ← bloque lleno   ->   insertar X en pos 1
+
+  [A B C D] [E F G|]
+     
+     desplazar
+
+  [A B C] [D E F] [G|]   <- X se inserta en el hueco
+ 
+ Luego si no hay espacio en **b** bloques (r==b): se llama a **sprea(l.u)** que crea un nuevo bloque vacío **b** posiciones adelante y redistribuye los elementos uniformemente entre los **b+1** bloques afectados.
+
+ Finalmente, si se llega al **dummy**: se crea un nuevo bloque vacio al final y se inserta ahi.
+
+ El costo es O(b) en el caso normal (desplazamiento domino) y O(b²) amortizado cuando ocurre **spread**.
+
+**`d) Compare SEList con ArrayDeque para muchas insercciones cerca del centro.`**
+
+ | Aspecto | **ArrayDeque** | **SEList** |
+ | :--- | :--- | :--- | 
+ | Insertar en posición i | O(n): desplaza hasta n/2 elementos | O(b + n/b): salta n/b bloques + desplaza b elementos dentro del bloque | 
+ | Óptimo con b=√n | no aplica | O(√n) por inserción |
+ | Memoria | 
+ | Memoria | Un arreglo contiguo, muy cache-friendly | Bloques dispersos, peor localidad | 
+ | Overhead de punteros | O(1) (un arreglo) | O(n/b) punteros de nodos |
+ | Rebalanceo/resize | O(n) amortizado | **spread**/**gather** O(b²) amortizado |
+
+ Para muchas inserciones en el centro, **SEList** con **b ≈ √n** gana: cada inserción cuesta O(√n) en vez de O(n). La desventaja es peor localidad de caché y la complejidad del código.
+
+**`e) Explique por que la interfa puede aparecer la de una lista aunque internamente use arreglos pequeños.`**
+
+
+**`f) Proponga una prueba de estres que detecte errores de tamaño logico o perdida de elementos.`**
 
  
 
 
+#### Pregunta 1
 
+**`a) Distinga ADT, representacion e implementacion usando este ejemplo.`**
 
+  El ADT (Tipo Abstracto de Datos): es el contrato observable  qué hace cada operación, sin decir cómo. Para **IndexedBag<T>** el ADT es exactamente la interfaz dada:
 
+  - **size()** : cuántos elementos hay
+  - **add(x)** : agrega x al final lógico, permite repetidos
+  - **get(i)** : retorna el elemento en posición i
+  - **contains(x)** : true si x existe al menos una vez
+  - **removeOne(x)** : elimina una ocurrencia de x si existe
+  - **uniqueStable()** : elimina duplicados conservando la primera aparición
+
+  El ADT no nos dice si se usa un arreglo, una lista, ni cómo se maneja la memoria.
+
+  **Representación:** es la estructura de datos elegida para almacenar los elementos internamente. Para **IndexedBag** hay tres candidatas: **ArrayStack**, **RootishArrayStack** y **SLList**. La representación responde a "¿cómo se guardan los datos?".
+
+  **Implementación:** es el código concreto que conecta el ADT con la representación elegida,los cuerpos de cada método usando las operaciones de la estructura subyacente. Por ejemplo, implementar add(x) sobre ArrayStack se traduce en a.add(a.size(), x). La implementación responde a "¿cómo se ejecuta cada operación?".
+
+       Usando este mismmo ejemplo: IndexedBag es el ADT, ArrayStack es una representación posible, y el cuerpo de add que llama a ArrayStack::add(size(), x) es la implementación.
+  
+**`b) Complete y justifique costos para add,get,contains y removeOne en las tres representaciones.`**
+  
+  Para analizar los costos tenemos que  entender qué hace cada operación sobre cada estructura:
+
+  **add(x)** , agrega al final lógico:
+  
+     En **ArrayStack**, agregar al final es **add(n, x)**: no desplaza nada, solo incrementa **n**. El único costo extra ocurre cuando el arreglo está lleno y hay que hacer **resize()**, que copia todos los elementos, pero esto ocurre cada vez que **n** dobla, así que el costo se amortiza. Resultado: O(1) amortizado.
+
+     En **RootishArrayStack**, agregar al final tampoco desplaza elementos, y **grow()** solo crea un nuevo bloque sin copiar. Resultado: O(1) amortizado, con mejor constante espacial **que ArrayStack**.
+
+     En **SLList**, **add(x)** inserta en **tail** directamente gracias al puntero de cola. Sin copias, sin desplazamientos, sin redimensionar. Resultado: O(1) estricto.
+
+  **get(i)** , acceso por indice:
+
+     En **ArrayStack**, **a[i]** es acceso directo a memoria contigua. Resultado: O(1) estricto.
+
+     En **RootishArrayStack**, hay que calcular **b = i2b(i)** (raíz cuadrada y **ceil**) y luego indexar **blocks.get(b)[j]**. Son operaciones aritméticas constantes más dos indirecciones. Resultado: O(1) con constante mayor.
+
+     En **SLList**, no hay acceso directo. **nodeAt(i)** recorre desde **head** hasta el nodo **i**. Resultado: O(n) en el peor caso.
+ 
+  **contains(x)**  busca si existe al menos una ocurrencia:
+  
+  En las tres representaciones hay que recorrer todos los elementos comparando con x, porque no hay ningún orden ni tabla de búsqueda. En ArrayStack y RootishArrayStack se itera sobre índices 0 a n-1. En SLList se recorre enlace por enlace. En todos los casos: O(n).
+
+  **removeOne(x)**  eliminar una ocurrencia si existe:
+
+ Primero hay que encontrar x (O(n)), luego eliminarlo.
+ 
+ En **ArrayStack**, encontrar el índice es O(n), luego **remove(i)** desplaza los elementos siguientes, O(n) en el peor caso. Resultado: O(n).
+ 
+ En **RootishArrayStack**, encontrar es O(n), y **remove(i)** también desplaza con **set/get** sobre bloques. Resultado: O(n).
+ 
+ En **SLList**, encontrar el nodo previo al que se quiere eliminar es O(n), luego el enlace se reencadena en O(1). Resultado: O(n) igual, pero con mejor constante al no desplazar elementos físicamente.
+
+ Tabla resumida: 
+  | Operacion | **ArrayStack** | RootishArrayStack | SLList |
+  | :--- | :--- | :--- | :--- | 
+  | **add(x)** | O(1) amort. | O(1) amort. | O(1) estricto |
+  | **get(i)** | O(1) | O(1) con √n aritmética | O(n) | 
+  | **contains(x) | O(n) | O(n) | O(n) | 
+  | **removeOne(x)** | O(n) | O(n) | O(n) | 
+
+**`c) Explique que trade-off espacial introduce RootishArrayStack frente a ArrayStack.`**
+ 
+ Para un **ArrayStack** mantiene un único arreglo contiguo. Cuando hace **resize()**, puede llegar a tener hasta el doble de la capacidad necesaria, en el peor caso desperdicia O(n) slots vacíos. Por ejemplo, justo después de un **resize**, el arreglo tiene capacidad **2n** pero solo **n** elementos ocupados: **n** slots desperdiciados.
+ 
+ Para un **RootishArrayStack** organiza los elementos en bloques de tamaños **1, 2, 3, ..., r**. Con r bloques la capacidad es **r(r+1)/2** y **r ≈ √(2n)**. El espacio desperdiciado entre la capacidad y los **n** elementos reales es a lo sumo **r = O(√n)** slots.
+
+ El trade-off es : **RootishArrayStack** desperdicia mucho menos espacio (O(√n) vs O(n)), pero a cambio **get(i)** requiere calcular **i2b(i)** con una raíz cuadrada, y hay overhead de **r = O(√n)** punteros adicionales para el arreglo **blocks**. Para **IndexedBag** con muchos elementos, **RootishArrayStack** es la opción más eficiente en memoria.
+
+**`d) Indique que operacion es mas incomoda para SLList y por que.`**
+ 
+ La operación más incómoda es **get(i)**, porque **SLList** no tiene acceso aleatorio. Al ser una lista enlazada simple, para llegar al elemento de índice **i** hay que recorrer desde **head** nodo por nodo hasta el i-ésimo, esto es O(n) en el peor caso.
+
+ Esto hace que cualquier operacion que dependa de **get** tambien se vea perjudicada.
+ Un ejemplo claro podria ser, **removeOne(x)** en **ArrayStack** sobre arreglo encuentra el indice y borra; en **SLList** hay que recorrer enlace por enlace, y además al eliminar un nodo interior hay que llegar al nodo anterior, lo que requiere otro recorrido desde **head**.
+
+ **SLList** solo guarda el puntero **next**, no **prev**. Por eso retroceder o saltar a una posición arbitraria es imposible en O(1). Una **DLList** (doblemente enlazada) alivia un poco esto pero no resuelve el O(n) del acceso por índice.
+
+**`e) Diseñe a alto nivel uniqueStable() y analice su costo si no se permite usar tablas hash ni estructuras externas no vistas.`**
+
+ **uniqueStable()** debe eliminar todos los duplicados conservando la primera aparición de cada elemento, manteniendo el orden original.
+
+ Su diseño a alto nivel es que se recorre la colección con dos índices: un índice **i** que avanza elemento por elemento de izquierda a derecha, y para cada elemento en posición **i** se busca si ya apareció en las posiciones **0** a **i-1**. Si ya apareció, se elimina; si no, se conserva y se avanza.
+
+ Para cada posición **i** de **0** a **n-1** (ajustando **n** dinámicamente):
+
+ - Se recorre el subarreglo **[0, i-1]** buscando si algún elemento es igual a **get(i)**.
+ - Si se encuentra un duplicado, se llama a **removeOne** sobre la posición **i** y se repite el chequeo en la misma posición **i** (que ahora tiene el siguiente elemento).
+ - Si no se encuentra duplicado, se avanza **i**.
+
+Análisis de costo:
+
+Para cada uno de los **n** elementos, la búsqueda hacia atrás recorre hasta i elementos -> costo O(i). Sumando sobre todos los índices:
+
+  costo total = O(0) + O(1) + O(2) + ... + O(n-1) = O(n²)
+
+Además, cada **removeOne** desplaza elementos (en **ArrayStack** o **RootishArrayStack**) con costo O(n), lo que no cambia el orden asintótico pero sí la constante.
+
+En conclusion sin las estructuras iniciales como tablas hash,**uniqueStable()** tiene costo O(n²) en cualquiera de las tres representaciones, porque la búsqueda de duplicados requiere comparar cada elemento con todos los anteriores.
 
 
 
