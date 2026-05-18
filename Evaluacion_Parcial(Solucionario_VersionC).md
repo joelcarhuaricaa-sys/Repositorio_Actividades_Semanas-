@@ -608,6 +608,35 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
  
  Con el nuevo requisito de acceso por índice, la representación recomendada es ArrayStack por su simplicidad y O(1) estricto para getAt(i)
 
+#### Pregunta 6
+
+**`a) Proponga pruebas concretas que probablemente fallen si no se maneja correctamente el wrap-around.`**
+  
+  Prueba 1: Se construye un ArrayDeque con capacidad 4, j = 3, n = 3, con elementos [10, 20, 30] en posiciones físicas 3, 0, 1 respectivamente. Se llama remove(1). El desplazamiento de elementos para cerrar el hueco debe cruzar el borde del arreglo usando aritmética modular. Si la implementación calcula a[j+k] en lugar de **a[(j+k) % a.length]**, accede a la posición física 4, que está fuera del arreglo.
+
+ Prueba 2: Se construye un **ArrayDeque** con capacidad 4, **j = 2**, n = 4, con elementos [10, 20, 30, 40] en posiciones físicas 2, 3, 0, 1 respectivamente. Se llama remove(0). Al eliminar el primer elemento la implementación debe actualizar j = (j + 1) % a.length. Si se hace sin módulo, j queda con el valor a.length, que es un índice fuera de rango y corrompe el estado interno.
+
+**`b) Proponga 2 pruebas para la eliminacion en estructura de tamaño 1 y tamaño 2.`**
+  Tamaño 1: Se inserta un único elemento y se llama **remove(0)**. Se verifica que el valor retornado es el elemento insertado, que **size()** retorna 0 después del remove, y que un **add** posterior funciona correctamente. Esto confirma que la rama del **for** no itera con **n=1** y que **resize()** se invoca dejando el estado interno consistente.
+
+  Tamaño 2, eliminar primero: Se insertan dos elementos con **j = capacity - 1**, se llama **remove(0)*** y se verifica que el elemento restante es el correcto y que **n = 1**. Este caso fuerza que j se actualice con módulo: si j = capacity - 1 y la implementación hace **j = j + 1** sin módulo, **j** queda igual a **capacity**, que es inválido.
+
+**`c) Explique por que pasar pruebas publicas no prueba correctitud total.`**
+   
+  Porque las pruebas públicas construyen el deque desde cero con j = 0, por lo que nunca hay wrap-around. La implementación puede ser correcta para ese caso y fallar cuando j ≠ 0, ya que los cálculos de índice circular difieren. Al no haber pruebas que fuercen j a estar cerca del borde del arreglo, los errores en la aritmética modular pasan desapercibidos. El valor de j es un estado interno que las pruebas públicas no controlan directamente, por lo que solo cubren el comportamiento observable en condiciones normales, no todos los estados internos posibles.
+
+**`d) Explique por que pasar pruebas publicas no prueba correctitud total.`**
+
+ Después de cada eliminación deben cumplirse tres condiciones: primero, n disminuyó exactamente en 1; segundo, todos los elementos en posiciones lógicas [0, n-1] son accesibles con get(i) y retornan los valores correctos respetando la aritmética circular, es decir, el elemento en posición física (j+i) % a.length es el esperado para cada índice lógico i; tercero, el elemento eliminado ya no aparece en ninguna posición lógica de la secuencia, descartando duplicaciones accidentales por un for que copiara en dirección incorrecta.
+
+**`e) Explique que tipo de error podria detectar ASan en una implementacion incorrecta y que tipo de error logico no detectaria.`**
+
+ ASan detecta accesos fuera de los límites del arreglo físico y uso de memoria ya liberada. Por ejemplo, si la implementación calcula **a [j+k]** sin módulo y **j+k >= a**.length, ASan reporta el acceso ilegal.
+ Lo que ASan no detecta son errores lógicos donde se accede a una posición dentro del arreglo pero que corresponde al índice lógico equivocado. Por ejemplo, si el módulo se calcula incorrectamente pero produce un valor que sigue estando entre 0 y **a.length-1**, el acceso es físicamente válido y ASan no lo reporta, aunque el resultado sea incorrecto. Ese tipo de bug produce valores erróneos silenciosamente y solo puede detectarse con **assert** que comparen el resultado obtenido con el esperado.
+
+
+
+
 
 
 
