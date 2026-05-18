@@ -379,12 +379,16 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
 
 **`e) Explique por que la interfa puede aparecer la de una lista aunque internamente use arreglos pequeños.`**
 
+ La interfaz parece una lista indexada común porque expone exactamente los mismos métodos estándar (get(i), add(i,x), remove(i)). Esto se basa en el principio de encapsulamiento: la representación interna de bloques encadenados es un detalle de implementación oculto para el código cliente.
+
+ El usuario interactúa únicamente mediante un índice lógico. Internamente, funciones como getLocation(i) traducen de forma transparente ese índice a la coordenada real (bloque, posición_dentro_del_bloque). De este modo, aunque la estructura interna sea compleja, el comportamiento observable es idéntico al de cualquier otra lista.
 
 **`f) Proponga una prueba de estres que detecte errores de tamaño logico o perdida de elementos.`**
 
+  La prueba consiste en realizar inserciones y eliminaciones masivas en posiciones críticas (inicio, centro y final) para forzar los métodos de balanceo (spread y gather). En paralelo, se replican exactamente las mismas operaciones en una estructura de referencia confiable (como std::vector).
+
+  Tras cada operación, se automatizan dos verificaciones: que el size() de ambas estructuras coincida (detecta errores de conteo) y que un recorrido completo usando get(i) devuelva los mismos elementos en el mismo orden (detecta pérdida, duplicación o desplazamiento incorrecto de elementos entre bloques).
  
-
-
 #### Pregunta 1
 
 **`a) Distinga ADT, representacion e implementacion usando este ejemplo.`**
@@ -617,6 +621,7 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
  Prueba 2: Se construye un **ArrayDeque** con capacidad 4, **j = 2**, n = 4, con elementos [10, 20, 30, 40] en posiciones físicas 2, 3, 0, 1 respectivamente. Se llama remove(0). Al eliminar el primer elemento la implementación debe actualizar j = (j + 1) % a.length. Si se hace sin módulo, j queda con el valor a.length, que es un índice fuera de rango y corrompe el estado interno.
 
 **`b) Proponga 2 pruebas para la eliminacion en estructura de tamaño 1 y tamaño 2.`**
+
   Tamaño 1: Se inserta un único elemento y se llama **remove(0)**. Se verifica que el valor retornado es el elemento insertado, que **size()** retorna 0 después del remove, y que un **add** posterior funciona correctamente. Esto confirma que la rama del **for** no itera con **n=1** y que **resize()** se invoca dejando el estado interno consistente.
 
   Tamaño 2, eliminar primero: Se insertan dos elementos con **j = capacity - 1**, se llama **remove(0)*** y se verifica que el elemento restante es el correcto y que **n = 1**. Este caso fuerza que j se actualice con módulo: si j = capacity - 1 y la implementación hace **j = j + 1** sin módulo, **j** queda igual a **capacity**, que es inválido.
