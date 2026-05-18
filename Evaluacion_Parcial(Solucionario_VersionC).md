@@ -381,7 +381,7 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
 
 **`c) Explique porque front guarda su contenido en orden inverso.`**
 
- Porque **front** representa el extremo izquierdo de la deque y se opera por su extremo derecho (que es el extremo más eficiente de un **ArrayStack**). Si guardáramos front en orden normal **[10, 20, 30]**, añadir al frente de la deque (índice 0) requeriría insertar al inicio del arreglo, desplazando todos los elementos — O(n). Al guardarlo invertido **[30, 20, 10]**, el elemento lógico **i=0** (que es **10**) está en **front[last]**, y agregar/quitar al frente de la deque equivale a un **push/pop** al final del **ArrayStack**, que es O(1) amortizado.
+ Porque **front** representa el extremo izquierdo de la deque y se opera por su extremo derecho (que es el extremo más eficiente de un **ArrayStack**). Si guardáramos front en orden normal **[10, 20, 30]**, añadir al frente de la deque (índice 0) requeriría insertar al inicio del arreglo, desplazando todos los elementos O(n). Al guardarlo invertido **[30, 20, 10]**, el elemento lógico **i=0** (que es **10**) está en **front[last]**, y agregar/quitar al frente de la deque equivale a un **push/pop** al final del **ArrayStack**, que es O(1) amortizado.
 
 **`d) Defina una condicion razonable de balance entre front y back. Explique que debe hacer balance() cuando se viola.`**
 
@@ -389,9 +389,9 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
 
  NO desbalanceado:
 
-  front.size() ≤ 3 × back.size()
+   front.size() ≤ 3 × back.size()
   
-  back.size()  ≤ 3 × front.size()
+   back.size()  ≤ 3 × front.size()
 
  El código lo verifica como:
  
@@ -474,7 +474,6 @@ front = [30, 20, 10]  y back  = [40, 50, 60, 70], su secuencia logia seria [10, 
  | :--- | :--- | :--- | 
  | Insertar en posición i | O(n): desplaza hasta n/2 elementos | O(b + n/b): salta n/b bloques + desplaza b elementos dentro del bloque | 
  | Óptimo con b=√n | no aplica | O(√n) por inserción |
- | Memoria | 
  | Memoria | Un arreglo contiguo, muy cache-friendly | Bloques dispersos, peor localidad | 
  | Overhead de punteros | O(1) (un arreglo) | O(n/b) punteros de nodos |
  | Rebalanceo/resize | O(n) amortizado | **spread**/**gather** O(b²) amortizado |
