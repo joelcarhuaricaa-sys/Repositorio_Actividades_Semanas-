@@ -222,3 +222,56 @@
 
 #### Bloque 2 - Navegación, altura, profundidad y tamaño
 
+1. En `BinNode`, explica qué significan `hasLeft()`, `hasRight()`, `isRoot()`, `isLeaf()`, `isLeftChild()` e `isRightChild()`.
+
+ - **hasLeft()**
+     Verifica si el nodo tiene hijo izquierdo
+ ```C++
+ bool hasLeft() const { return left != nullptr; }
+ ```
+ Retorna true cuando left apunta a un nodo válido.
+
+ - **hasRight()**
+     Verifica si el nodo tiene hijo derecho.
+ ```C++
+ bool hasRight() const { return right != nullptr; }
+ ```
+
+ - **isRoot()**
+     Determina si el nodo es la raíz del árbol.
+ ```C++
+ bool isRoot() const { return parent == nullptr; }
+ ```
+ La raíz no tiene padre.
+
+ - **isLeaf()**
+     Verifica si el nodo es hoja.
+ ```C++
+ bool isLeaf() const { return left == nullptr && right == nullptr; }
+ ```
+ Un nodo hoja no tiene hijos.
+
+ - **isLeftChild()**
+     Determina si el nodo es hijo izquierdo de su padre.
+ ```C++
+ bool isLeftChild() const {
+    return parent != nullptr && parent->left == this;
+ }
+ ```
+
+ - **isRightChild()**
+     Determina si el nodo es hijo derecho de su padre.
+ ```C++
+ bool isRightChild() const {
+    return parent != nullptr && parent->right == this;
+ }
+ ```
+2. Explica el caso en que `succ()` baja al subárbol derecho y luego busca el nodo más a la izquierda.
+3. Explica el caso en que `succ()` sube por los ancestros hasta encontrar el primer giro hacia la izquierda.
+4. Explica simétricamente cómo debe funcionar `pred()`.
+5. Dibuja un árbol de al menos 7 nodos y marca el sucesor y predecesor inorden de tres nodos distintos.
+6. Explica qué calcula `depth(u)` y por qué puede implementarse subiendo por `parent`.
+7. Explica qué calcula `height(u)` y por qué suele implementarse bajando recursivamente por los hijos.
+8. Explica qué calcula `subtreeSize(u)`.
+9. Demuestra que para todo nodo `u` se cumple `depth(u) + height(u) <= height(T)`.
+10. Indica la condición necesaria y suficiente para que se alcance la igualdad anterior.
