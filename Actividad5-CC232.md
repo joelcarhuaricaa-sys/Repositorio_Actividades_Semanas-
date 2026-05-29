@@ -30,19 +30,20 @@
 
   Según BinNode.h, cada nodo almacena:
    
-      ```C++
-     T data;           // El dato genérico almacenado
-     Node* parent;     // Puntero al padre (nullptr si es raíz)
-     Node* left;       // Puntero al hijo izquierdo (nullptr si no existe)
-     Node* right;      // Puntero al hijo derecho (nullptr si no existe)
-     int height;       // Altura del subárbol enraizado en este nodo
-    ```
-    Propósito de cada campo:
+ ```C++
+ T data;           // El dato genérico almacenado
+ Node* parent;     // Puntero al padre (nullptr si es raíz)
+ Node* left;       // Puntero al hijo izquierdo (nullptr si no existe)
+ Node* right;      // Puntero al hijo derecho (nullptr si no existe)
+ int height;       // Altura del subárbol enraizado en este nodo
+ ```
 
-     data: Almacena el valor de tipo T que el nodo representa.
-     parent: Permite navegar hacia la raíz y calcular profundidad sin recursión.
-     left, right: Definen la estructura binaria del árbol y permiten recorridos descendentes.
-     height: Se mantiene actualizado para operaciones de balanceo, cálculo de altura eficiente, y diseño de AVLs/rotaciones. Almacenar altura evita recalcularla cada vez (O(n) → O(1)).
+ Propósito de cada campo:
+
+ - data: Almacena el valor de tipo T que el nodo representa.
+ - parent: Permite navegar hacia la raíz y calcular profundidad sin recursión.
+ - left, right: Definen la estructura binaria del árbol y permiten recorridos descendentes.
+ - height: Se mantiene actualizado para operaciones de balanceo, cálculo de altura eficiente, y diseño de AVLs/rotaciones. Almacenar altura evita recalcularla cada vez (O(n) → O(1)).
 
 3. Explica por qué el puntero `parent` permite implementar operaciones como `succ()`, `pred()` y actualización ascendente de alturas.
 
@@ -54,32 +55,32 @@
   
   Sin parent, subir es imposible. Con parent, implementamos:
 
-     ```C++
-     if (right != nullptr) {
-         return right->leftmost();  // Buscar el nodo más a la izquierda
-     }
-     while (this->isRightChild()) {
-         this = this->parent;       // Subir mientras seamos hijo derecho
-     }
-     return this->parent;           // El padre es el sucesor
-   ```
+ ```C++
+ if (right != nullptr) {
+     return right->leftmost();  // Buscar el nodo más a la izquierda
+ }
+ while (this->isRightChild()) {
+     this = this->parent;       // Subir mientras seamos hijo derecho
+ }
+ return this->parent;           // El padre es el sucesor
+ ```
 
- Para pred() (predecesor inorden):
+   Para pred() (predecesor inorden):
 
  Simétricamente, buscamos el nodo más a la derecha del subárbol izquierdo, o subimos por ancestros hasta encontrar un giro hacia la derecha.
 
  Para actualización ascendente de alturas:
    Después de insertar/eliminar un nodo, necesitamos actualizar la altura de todos los ancestros:
 
-     ```C++
-     void updateHeightAbove(Node* node) {
-     while (node != nullptr) {
-        updateHeight(node);
-        node = node->parent;  // Subir al padre
-     }
-     }
-     ```
-Sin parent, habría que recorrer desde la raíz nuevamente, lo que es ineficiente.
+  ```C++
+  void updateHeightAbove(Node* node) {
+  while (node != nullptr) {
+  updateHeight(node);
+  node = node->parent;  // Subir al padre
+  }
+  }
+  ```
+ Sin parent, habría que recorrer desde la raíz nuevamente, lo que es ineficiente.
 
 4.  Explica qué responsabilidad tiene `BinTree` frente a `BinNode`.
    
@@ -93,7 +94,7 @@ Sin parent, habría que recorrer desde la raíz nuevamente, lo que es ineficient
   - Actualiza invariantes globales: altura, tamaño, conectividad.
   - Proporciona interface para recorridos que deleguen a los métodos de BinNode.
 
-Analogía:**BinNode** es como una célula; **BinTree** es el organismo que coordina células.
+ Analogía:**BinNode** es como una célula; **BinTree** es el organismo que coordina células.
 
 5. Explica qué agrega `BinaryTree` sobre la infraestructura base de `BinTree`.
 
