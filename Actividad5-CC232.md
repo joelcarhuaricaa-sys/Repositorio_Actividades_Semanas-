@@ -172,7 +172,7 @@
   | Aspecto | BST | Heap |  
   | :--- | :--- | :--- | 
   | Representacion | Arbol enlazado | Arreglo implicito | 
-  | Propiedad | Izquierda< nodo < derecha | Padre ≤ hijos (min-heap)
+  | Propiedad | Izquierda< nodo < derecha | Padre ≤ hijos (min-heap) |
   | Alcance	| Global: toda la estructura | Local: solo relación padre-hijo | 
   | Orden inorden | Secuencia completamente ordenada | Sin orden garantizado | 
   | Búsqueda de elemento | O(log n) en balanceado | 
@@ -266,12 +266,221 @@
     return parent != nullptr && parent->right == this;
  }
  ```
+
 2. Explica el caso en que `succ()` baja al subárbol derecho y luego busca el nodo más a la izquierda.
+
+ El sucesor inorden de un nodo es el siguiente nodo que aparecería en un recorrido inorden.
+
+ En un recorrido inorden:
+
+  1. Subárbol izquierdo
+  2. Nodo actual
+  3. Subárbol derecho
+
+ Si un nodo tiene hijo derecho, entonces su sucesor estará dentro de ese subárbol derecho.
+ 
+ ```C++
+ if (right != nullptr) {
+    s = right;
+    while (s->left != nullptr) {
+        s = s->left;
+    }
+    return s;
+ }
+ ```
+ Proceso:
+
+ - Baja al hijo derecho.
+ - Luego avanza todo lo posible hacia la izquierda.
+ - El nodo más izquierdo del subárbol derecho es el  siguiente en inorden.
+
+ Ejemplo:
+
+    7
+   / \
+  3   10
+     /  \
+    8   12
+
+ Sucesor de 7:
+
+ - Va a 10
+ - Luego busca el más izquierdo -> 8
+ - Resultado: sucesor de 7 es 8.  
+
 3. Explica el caso en que `succ()` sube por los ancestros hasta encontrar el primer giro hacia la izquierda.
+ 
+ Si el nodo NO tiene hijo derecho, el sucesor no está debajo de él.
+
+ Entonces se sube usando parent.
+
+ ```C++
+ while (s->isRightChild()) {
+    s = s->parent;
+ }
+ return s->parent;
+ ```
+
 4. Explica simétricamente cómo debe funcionar `pred()`.
+
+ El predecesor inorden es el nodo inmediatamente anterior en el recorrido. Funciona de manera exactamente inversa (espejo) a **succ()**:
+ 
+   1. Si tiene subárbol izquierdo (**left != nullptr**): El predecesor será el nodo que esté más a la derecha dentro de ese subárbol izquierdo. El algoritmo baja a **left** y luego ejecuta un bucle **while (s->right != nullptr) { s = s->right; }.**
+  
+   2. Si no tiene subárbol izquierdo (**left == nullptr**): Significa que debemos buscar hacia arriba en los ancestros. Subimos por los padres mientras el nodo actual sea un hijo izquierdo (**while (s->isLeftChild()) { s = s->parent; }**). El bucle se detiene en el primer giro a la derecha, y el predecesor será el padre de ese nodo (**s->parent**).
+
 5. Dibuja un árbol de al menos 7 nodos y marca el sucesor y predecesor inorden de tres nodos distintos.
+
+ Utilizando la misma estructura del árbol del código proporcionado en tu demo_binary_tree.cpp, este es el esquema de sus 9 nodos:
+
+          7
+        /   \
+       3     10
+      / \   /  \
+     1   5 8    12
+        / \
+       4   6
+
+ Evaluemos el sucesor y predecesor inorden de tres nodos distintos (recorrido inorden completo: **1, 3, 4, 5, 6, 7, 8, 10, 12**):
+
+ Nodo [5]:
+
+    Predecesor: Tiene hijo izquierdo (4). El más a la derecha de ese subárbol es 4.
+
+    Sucesor: Tiene hijo derecho (6). El más a la izquierda de ese subárbol es 6.
+
+ Nodo [6]:
+
+    Predecesor: No tiene hijo izquierdo. Sube. Como 6 es hijo derecho de 5, el bucle de pred() no entra, y se detiene inmediatamente. Su padre es 5.
+
+    Sucesor: No tiene hijo derecho. Sube. Como 6 es hijo derecho de 5, sube a 5. Como 5 es hijo derecho de 3, sube a 3. 3 es hijo izquierdo de 7 (rompe el bucle de succ()), por lo tanto el sucesor es el padre de 3, que es 7.
+
+ Nodo [8]:
+
+    Predecesor: No tiene hijo izquierdo. Sube. 8 es hijo izquierdo de 10. Sube a 10. 10 es hijo derecho de 7. Sube a 7. Como 7 es raíz, el bucle termina. El padre de 7 es nullptr, pero la condición se rompió en 8 (que es hijo izquierdo de 10), devolviendo el padre de 8 que es 7.
+
+    Sucesor: No tiene hijo derecho. Sube. 8 es hijo izquierdo de 10 (rompe el bucle). El padre es 10.
+
 6. Explica qué calcula `depth(u)` y por qué puede implementarse subiendo por `parent`.
+
+ La profundidad **depth(u)** calcula la distancia (número de aristas) desde la raíz del árbol hasta el nodo u. La raíz tiene profundidad 0.Se puede implementar subiendo por **parent** porque la relación jerárquica de un árbol binario garantiza que cada nodo (excepto la raíz) tiene exactamente un único padre. Por lo tanto, existe un camino lineal e inequívoco desde cualquier nodo hacia la raíz. Simplemente se cuenta cuántas veces podemos saltar a **node->parent** antes de llegar a **root_** o a un puntero nulo. Su complejidad temporal es O(d) donde $d$ es la profundidad del nodo.
+
 7. Explica qué calcula `height(u)` y por qué suele implementarse bajando recursivamente por los hijos.
+
+ La altura **height(u)** calcula la distancia de la trayectoria más larga desde el nodo $u$ hasta una hoja de su subárbol. Una hoja tiene altura 0 (y un nodo nulo tiene altura -1).
+ 
+ Se implementa bajando recursivamente porque un nodo puede tener dos caminos/subárboles distintos (izquierdo y derecho). No se puede conocer la altura de un nodo sin explorar ambas ramas, ya que la altura está determinada por el máximo de las alturas de sus hijos:
+
+      height(u) = 1 + max(height(u.left),height(u.right))
+   
+ La recursión divide el problema descendiendo hasta las hojas para calcular el tamaño de los caminos y luego "arrastra" de vuelta el valor máximo hacia arriba.
+
 8. Explica qué calcula `subtreeSize(u)`.
+
+ Calcula el número total de nodos que componen el subárbol cuya raíz es $u$ (incluyendo al propio nodo $u$).
+ Se define matemáticamente de forma recursiva como:
+ 
+     subtreeSize(u) = 1 + subtreeSize(u.left) + subtreeSize(u.right)
+
+ Donde el tamaño de un nodo nulo (nullptr) es 0.
+
 9. Demuestra que para todo nodo `u` se cumple `depth(u) + height(u) <= height(T)`.
+
+  Definiciones:
+
+  - height(T) es la longitud del camino más largo desde la raíz de T hasta cualquier hoja del árbol completo.
+  - depth(u) es la longitud del camino único desde la raíz hasta u.
+  - height(u) es la longitud del camino más largo desde $u$ hasta una hoja en el subárbol de u.
+ 
+ Demostración:
+ Si unimos el camino único desde la raíz hasta el nodo $u$ (de longitud depth(u) con el camino más largo desde $u$ hasta una hoja de su propio subárbol (de longitud (u)), formamos un camino completo y continuo que va desde la raíz del árbol T hasta una hoja.
+ Por definición de altura de un árbol, height(T) es el máximo absoluto de las longitudes de todos los caminos posibles desde la raíz hasta cualquier hoja. Como el camino que pasa por $u$ y sigue su rama más profunda es solo uno de los tantos caminos posibles del árbol, su longitud combinada no puede superar al máximo absoluto del árbol. Por lo tanto:
+
+     depth(u) + height(u) <= height(T)
+
 10. Indica la condición necesaria y suficiente para que se alcance la igualdad anterior.
+
+Para que se cumpla de forma exacta la igualdad:
+
+     depth(u) + height(u) = height(T)
+
+ La condición necesaria y suficiente es que el nodo $u$ debe pertenecer a uno de los caminos más largos (más profundos) del árbol T.
+ Es decir, debe existir al menos una hoja con la profundidad máxima del árbol (depth(hoja) = height(T)) que sea descendiente de u (o que sea el propio u). Si u se encuentra en una rama "corta" o menos profunda del árbol, la suma será estrictamente menor a height(T).
+
+#### Bloque 3 - Recorridos y trazado guiado
+
+          7
+        /   \
+       3     10
+      / \   /  \
+     1   5 8    12
+        / \
+       4   6
+
+ | Recorrido | Versión revisada | Estructura auxiliar usada | Secuencia producida en el árbol de prueba | Argumento de correctitud y costo |
+ |---|---|---|---|---|
+ | Preorden recursivo | **travPre** | Ninguna explícita (Pila de llamadas del sistema). | 7 3 1 5 4 6 10 8 12 | Correctitud: Procesa la raíz, luego el subárbol izquierdo y finalmente el derecho de forma auto-similar.
+ Costo: Tiempo O(n), Memoria O(h). |
+ | Preorden iterativo | travPreIterative2 | std::stack<Node*> explícita. | 7 3 1 5 4 6 10 8 12 | Correctitud: Simula la recursión guardando los hijos. Apila primero el derecho y luego el izquierdo para que el izquierdo se procese antes.
+ Costo: Tiempo O(n), Memoria O(h). |
+ | Inorden recursivo | travInRecursive | Ninguna explícita (Pila de llamadas del sistema). | 1 3 4 5 6 7 8 10 12 | Correctitud: Visita el subárbol izquierdo, procesa la raíz y luego el subárbol derecho. En un BST, genera la secuencia ordenada.
+ Costo: Tiempo O(n), Memoria O(h). |
+ | Inorden iterativo #1 | travInIterative1 | std::stack<Node*> explícita. | 1 3 4 5 6 7 8 10 12 | Correctitud: Baja por la izquierda metiendo nodos a la pila hasta el extremo inferior. Al desapilar, procesa el nodo y se desplaza a su derecha.
+ Costo: Tiempo O(n), Memoria O(h). |
+ | Inorden iterativo #2 | travInIterative2 | Ninguna (usa punteros parent de la estructura). | 1 3 4 5 6 7 8 10 12 | Correctitud: Utiliza una máquina de estados comparando prev y curr para saber si está bajando (por izq/der) o subiendo desde un hijo.
+ Costo: Tiempo O(n), Memoria O(1) constante. | 
+ | Inorden iterativo #3 | travInIterative3 | Ninguna (usa los métodos leftmost() y succ()). | 1 3 4 5 6 7 8 10 12 | Correctitud: Se posiciona en el primer nodo inorden (leftmost) y avanza a través de la función del sucesor directo (succ) basada en punteros.
+ Costo: Tiempo O(n) amortizado, Memoria O(1). |
+ | Postorden recursivo | travPost | Ninguna explícita (Pila de llamadas del sistema). | 1 4 6 5 3 8 12 10 7 | Correctitud: Procesa recursivamente ambos hijos (izquierdo y luego derecho) antes de procesar el nodo actual (raíz).
+ Costo: Tiempo O(n), Memoria O(h). | 
+ | Postorden iterativo | travPostIterative | Dos pilas (s1 y s2). | 1 4 6 5 3 8 12 10 7 | Correctitud: s1 genera un recorrido "raíz-derecha-izquierda" que al transferirse inversamente a s2 resulta en "izquierda-derecha-raíz".
+ Costo: Tiempo O(n), Memoria O(n) (debido a s2). |
+ | Por niveles | travLevel | std::queue<Node*> explícita. | 7 3 10 1 5 8 12 4 6 | Correctitud: Implementa un recorrido BFS (Breadth-First Search). Encola los hijos de izquierda a derecha conforme extrae los padres.
+ Costo: Tiempo O(n), Memoria O(w) (ancho máximo del árbol). |
+
+1. ¿Qué significa visitar un nodo en preorden?
+
+ Significa procesar o evaluar la información del nodo antes de explorar sus subárboles. El orden estricto de ejecución es: Raíz -> Subárbol Izquierdo -> Subárbol Derecho.
+  
+2. ¿Qué significa visitar un nodo en inorden?
+
+ Significa procesar el nodo en el punto medio de la exploración estructural. Se exploran todos los elementos del Subárbol Izquierdo, luego se procesa la Raíz, y finalmente se explora el Subárbol Derecho. En árboles binarios de búsqueda (BST), este recorrido garantiza extraer los elementos en orden ascendente.
+
+3. ¿Qué significa visitar un nodo en postorden?
+
+ Significa posponer el procesamiento de la raíz hasta que todos sus descendientes directos hayan sido completamente visitados. El orden es: Subárbol Izquierdo -> Subárbol Derecho -> Raíz. Es ideal para operaciones de destrucción (como el método destroy de tu código) porque no puedes borrar un padre sin haber borrado sus hijos primero.
+
+4. ¿Qué significa visitar un árbol por niveles?
+
+ Significa realizar un recorrido horizontal (BFS). Se procesan los nodos en orden estrictamente creciente de su profundidad (Nivel 0, luego Nivel 1, Nivel 2, etc.) y, dentro de un mismo nivel, se leen de izquierda a derecha.
+
+5. ¿Por qué los recorridos recursivos tienen tiempo `O(n)`?
+
+ Porque cada nodo del árbol es visitado una cantidad finita y constante de veces (entrando a la función, y retornando de los hijos izquierdo y derecho). Al haber exactamente $n$ nodos, el trabajo total es directamente proporcional a la cantidad de elementos: T(n) = c .n.
+
+6. ¿Por qué las versiones iterativas también tienen tiempo `O(n)`?
+
+ Porque simulan exactamente la misma lógica sin el overhead de la recursión. En las versiones con pila/cola, cada nodo es insertado (push) y extraído (pop) exactamente una vez. En la versión Iterative3 (por sucesor), aunque el algoritmo sube y baja buscando el sucesor, ninguna arista del árbol se recorre más de 2 o 3 veces en total durante todo el proceso, lo que resulta en un tiempo total amortizado lineal de O(n).
+
+7. ¿Cuál es la memoria auxiliar de un recorrido recursivo en un árbol balanceado?
+
+ En un árbol perfectamente balanceado, la altura del árbol está acotada por h = log sub2(n). Como la pila de llamadas del sistema (call stack) crece proporcionalmente a la profundidad máxima alcanzada, el consumo de memoria auxiliar será de O(log n).
+
+8. ¿Cuál es la memoria auxiliar de un recorrido recursivo en un árbol degenerado?
+
+ Un árbol degenerado (o "skewer") se comporta como una lista enlazada, donde cada nodo tiene un solo hijo. Su altura es h = n - 1. Por lo tanto, la pila de llamadas del sistema acumulará todos los nodos antes de empezar a retornar, consumiendo una memoria de O(n).
+
+9. ¿Qué diferencia hay entre usar una pila explícita y usar la pila de llamadas?
+
+ - Pila de llamadas (Recursión): Es manejada automáticamente por el sistema operativo y la arquitectura de hardware. Guarda no solo el puntero al nodo, sino también variables locales, registros de la CPU y la dirección de retorno. Puede provocar un error de desbordamiento de pila (stack overflow) si el árbol es excesivamente profundo.
+
+ - Pila explícita (std::stack): Se aloja en la memoria dinámica (heap). Almacena únicamente la información estrictamente necesaria (en tu caso, un puntero Node* de 8 bytes). Es mucho más eficiente en uso de memoria real y es virtualmente inmune al stack overflow, limitada únicamente por la RAM total del sistema.
+
+10. ¿Por qué la cola del recorrido por niveles puede crecer mucho más en un árbol completo que en un árbol degenerado?.
+
+ La memoria de la cola depende del ancho máximo (w) del árbol.
+ 
+  - En un árbol degenerado, el ancho de cada nivel es siempre 1. La cola nunca tendrá más de 1 o 2 elementos al mismo tiempo.
+  - En un árbol completo, el último nivel contiene aproximadamente la mitad de todos los nodos del árbol ([n/2]). Cuando el algoritmo procesa el penúltimo nivel, añade todos los hijos a la cola simultáneamente, provocando que esta almacene hasta O(n) nodos en su punto crítico.
+
+  
