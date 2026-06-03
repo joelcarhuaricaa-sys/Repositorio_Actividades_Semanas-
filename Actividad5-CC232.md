@@ -419,24 +419,15 @@ Para que se cumpla de forma exacta la igualdad:
 
  | Recorrido | Versión revisada | Estructura auxiliar usada | Secuencia producida en el árbol de prueba | Argumento de correctitud y costo |
  |---|---|---|---|---|
- | Preorden recursivo | **travPre** | Ninguna explícita (Pila de llamadas del sistema). | 7 3 1 5 4 6 10 8 12 | Correctitud: Procesa la raíz, luego el subárbol izquierdo y finalmente el derecho de forma auto-similar.
- Costo: Tiempo O(n), Memoria O(h). |
- | Preorden iterativo | travPreIterative2 | std::stack<Node*> explícita. | 7 3 1 5 4 6 10 8 12 | Correctitud: Simula la recursión guardando los hijos. Apila primero el derecho y luego el izquierdo para que el izquierdo se procese antes.
- Costo: Tiempo O(n), Memoria O(h). |
- | Inorden recursivo | travInRecursive | Ninguna explícita (Pila de llamadas del sistema). | 1 3 4 5 6 7 8 10 12 | Correctitud: Visita el subárbol izquierdo, procesa la raíz y luego el subárbol derecho. En un BST, genera la secuencia ordenada.
- Costo: Tiempo O(n), Memoria O(h). |
- | Inorden iterativo #1 | travInIterative1 | std::stack<Node*> explícita. | 1 3 4 5 6 7 8 10 12 | Correctitud: Baja por la izquierda metiendo nodos a la pila hasta el extremo inferior. Al desapilar, procesa el nodo y se desplaza a su derecha.
- Costo: Tiempo O(n), Memoria O(h). |
- | Inorden iterativo #2 | travInIterative2 | Ninguna (usa punteros parent de la estructura). | 1 3 4 5 6 7 8 10 12 | Correctitud: Utiliza una máquina de estados comparando prev y curr para saber si está bajando (por izq/der) o subiendo desde un hijo.
- Costo: Tiempo O(n), Memoria O(1) constante. | 
- | Inorden iterativo #3 | travInIterative3 | Ninguna (usa los métodos leftmost() y succ()). | 1 3 4 5 6 7 8 10 12 | Correctitud: Se posiciona en el primer nodo inorden (leftmost) y avanza a través de la función del sucesor directo (succ) basada en punteros.
- Costo: Tiempo O(n) amortizado, Memoria O(1). |
- | Postorden recursivo | travPost | Ninguna explícita (Pila de llamadas del sistema). | 1 4 6 5 3 8 12 10 7 | Correctitud: Procesa recursivamente ambos hijos (izquierdo y luego derecho) antes de procesar el nodo actual (raíz).
- Costo: Tiempo O(n), Memoria O(h). | 
- | Postorden iterativo | travPostIterative | Dos pilas (s1 y s2). | 1 4 6 5 3 8 12 10 7 | Correctitud: s1 genera un recorrido "raíz-derecha-izquierda" que al transferirse inversamente a s2 resulta en "izquierda-derecha-raíz".
- Costo: Tiempo O(n), Memoria O(n) (debido a s2). |
- | Por niveles | travLevel | std::queue<Node*> explícita. | 7 3 10 1 5 8 12 4 6 | Correctitud: Implementa un recorrido BFS (Breadth-First Search). Encola los hijos de izquierda a derecha conforme extrae los padres.
- Costo: Tiempo O(n), Memoria O(w) (ancho máximo del árbol). |
+ | Preorden recursivo | **travPre** | Ninguna explícita (Pila de llamadas del sistema). | **7 3 1 5 4 6 10 8 12** | Correctitud: Procesa la raíz, luego el subárbol izquierdo y finalmente el derecho de forma auto-similar.Costo: Tiempo O(n), Memoria O(h). |
+ | Preorden iterativo | **travPreIterative2** | **std::stack<Node*>** explícita. | **7 3 1 5 4 6 10 8 12** | Correctitud: Simula la recursión guardando los hijos. Apila primero el derecho y luego el izquierdo para que el izquierdo se procese antes.Costo: Tiempo O(n), Memoria O(h). |
+ | Inorden recursivo | **travInRecursive** | Ninguna explícita (Pila de llamadas del sistema). | **1 3 4 5 6 7 8 10 12** | Correctitud: Visita el subárbol izquierdo, procesa la raíz y luego el subárbol derecho. En un BST, genera la secuencia ordenada.Costo: Tiempo O(n), Memoria O(h). |
+ | Inorden iterativo #1 | **travInIterative1** | **std::stack<Node*>** explícita. | **1 3 4 5 6 7 8 10 12** | Correctitud: Baja por la izquierda metiendo nodos a la pila hasta el extremo inferior. Al desapilar, procesa el nodo y se desplaza a su derecha.Costo: Tiempo O(n), Memoria O(h). |
+ | Inorden iterativo #2 | **travInIterative2** | Ninguna (usa punteros **parent** de la estructura). | **1 3 4 5 6 7 8 10 12** | Correctitud: Utiliza una máquina de estados comparando **prev** y **curr** para saber si está bajando (por izq/der) o subiendo desde un hijo.Costo: Tiempo O(n), Memoria O(1) constante. | 
+ | Inorden iterativo #3 | **travInIterative3** | Ninguna (usa los métodos **leftmost()** y **succ()**). | **1 3 4 5 6 7 8 10 12** | Correctitud: Se posiciona en el primer nodo inorden (**leftmost**) y avanza a través de la función del sucesor directo (**succ**) basada en punteros.Costo: Tiempo O(n) amortizado, Memoria O(1). |
+ | Postorden recursivo | **travPost** | Ninguna explícita (Pila de llamadas del sistema). | **1 4 6 5 3 8 12 10 7** | Correctitud: Procesa recursivamente ambos hijos (izquierdo y luego derecho) antes de procesar el nodo actual (raíz).Costo: Tiempo O(n), Memoria O(h). | 
+ | Postorden iterativo | **travPostIterative** | Dos pilas (**s1** y **s2**). | **1 4 6 5 3 8 12 10 7** | Correctitud: **s1** genera un recorrido "raíz-derecha-izquierda" que al transferirse inversamente a **s2** resulta en "izquierda-derecha-raíz".Costo: Tiempo O(n), Memoria O(n) (debido a **s2**). |
+ | Por niveles | **travLevel** | **std::queue<Node*>** explícita. | **7 3 10 1 5 8 12 4 6** | Correctitud: Implementa un recorrido BFS (Breadth-First Search). Encola los hijos de izquierda a derecha conforme extrae los padres.Costo: Tiempo O(n), Memoria O(w) (ancho máximo del árbol). |
 
 1. ¿Qué significa visitar un nodo en preorden?
 
@@ -448,7 +439,7 @@ Para que se cumpla de forma exacta la igualdad:
 
 3. ¿Qué significa visitar un nodo en postorden?
 
- Significa posponer el procesamiento de la raíz hasta que todos sus descendientes directos hayan sido completamente visitados. El orden es: Subárbol Izquierdo -> Subárbol Derecho -> Raíz. Es ideal para operaciones de destrucción (como el método destroy de tu código) porque no puedes borrar un padre sin haber borrado sus hijos primero.
+ Significa posponer el procesamiento de la raíz hasta que todos sus descendientes directos hayan sido completamente visitados. El orden es: Subárbol Izquierdo -> Subárbol Derecho -> Raíz. Es ideal para operaciones de destrucción (como el método **destroy** de tu código) porque no puedes borrar un padre sin haber borrado sus hijos primero.
 
 4. ¿Qué significa visitar un árbol por niveles?
 
@@ -460,7 +451,7 @@ Para que se cumpla de forma exacta la igualdad:
 
 6. ¿Por qué las versiones iterativas también tienen tiempo `O(n)`?
 
- Porque simulan exactamente la misma lógica sin el overhead de la recursión. En las versiones con pila/cola, cada nodo es insertado (push) y extraído (pop) exactamente una vez. En la versión Iterative3 (por sucesor), aunque el algoritmo sube y baja buscando el sucesor, ninguna arista del árbol se recorre más de 2 o 3 veces en total durante todo el proceso, lo que resulta en un tiempo total amortizado lineal de O(n).
+ Porque simulan exactamente la misma lógica sin el overhead de la recursión. En las versiones con pila/cola, cada nodo es insertado (**push**) y extraído (**pop**) exactamente una vez. En la versión **Iterative3** (por sucesor), aunque el algoritmo sube y baja buscando el sucesor, ninguna arista del árbol se recorre más de 2 o 3 veces en total durante todo el proceso, lo que resulta en un tiempo total amortizado lineal de O(n).
 
 7. ¿Cuál es la memoria auxiliar de un recorrido recursivo en un árbol balanceado?
 
@@ -474,7 +465,7 @@ Para que se cumpla de forma exacta la igualdad:
 
  - Pila de llamadas (Recursión): Es manejada automáticamente por el sistema operativo y la arquitectura de hardware. Guarda no solo el puntero al nodo, sino también variables locales, registros de la CPU y la dirección de retorno. Puede provocar un error de desbordamiento de pila (stack overflow) si el árbol es excesivamente profundo.
 
- - Pila explícita (std::stack): Se aloja en la memoria dinámica (heap). Almacena únicamente la información estrictamente necesaria (en tu caso, un puntero Node* de 8 bytes). Es mucho más eficiente en uso de memoria real y es virtualmente inmune al stack overflow, limitada únicamente por la RAM total del sistema.
+ - Pila explícita (**std::stack**): Se aloja en la memoria dinámica (heap). Almacena únicamente la información estrictamente necesaria (en tu caso, un puntero Node* de 8 bytes). Es mucho más eficiente en uso de memoria real y es virtualmente inmune al stack overflow, limitada únicamente por la RAM total del sistema.
 
 10. ¿Por qué la cola del recorrido por niveles puede crecer mucho más en un árbol completo que en un árbol degenerado?.
 
@@ -483,4 +474,3 @@ Para que se cumpla de forma exacta la igualdad:
   - En un árbol degenerado, el ancho de cada nivel es siempre 1. La cola nunca tendrá más de 1 o 2 elementos al mismo tiempo.
   - En un árbol completo, el último nivel contiene aproximadamente la mitad de todos los nodos del árbol ([n/2]). Cuando el algoritmo procesa el penúltimo nivel, añade todos los hijos a la cola simultáneamente, provocando que esta almacene hasta O(n) nodos en su punto crítico.
 
-  
