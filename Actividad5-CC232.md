@@ -296,11 +296,11 @@
 
  Ejemplo:
 
-    7
-   / \
-  3   10
-     /  \
-    8   12
+         7
+        / \
+       3   10
+          /  \
+         8   12
 
  Sucesor de 7:
 
@@ -473,4 +473,160 @@ Para que se cumpla de forma exacta la igualdad:
  
   - En un árbol degenerado, el ancho de cada nivel es siempre 1. La cola nunca tendrá más de 1 o 2 elementos al mismo tiempo.
   - En un árbol completo, el último nivel contiene aproximadamente la mitad de todos los nodos del árbol ([n/2]). Cuando el algoritmo procesa el penúltimo nivel, añade todos los hijos a la cola simultáneamente, provocando que esta almacene hasta O(n) nodos en su punto crítico.
+ 
+#### Bloque 4 - Demostración: evidencia observable
 
+ | Archivo | Salida u observable importante | Idea estructural | Argumento de costo, espacio o diseño |  
+ | :--- | :--- | :--- | :--- |
+ | **demo_binary_tree.cpp** | Impresión de los 3 tipos de inorden iterativo coincidiendo exactamente con el inorden recursivo. Coincidencia de **succ()** y **pred()** con los vecinos del vector. | Árbol binario enlazado explícitamente (**insertAsLC**, **insertAsRC**) con punteros al padre (**checkParentLinks**). | Los recorridos iterativos avanzados (como la estrategia 3 usando el puntero **parent**) logran un costo espacial de O(1) adicional frente al O(h) de la recursión. | 
+ | **demo_bst.cpp** | **bst.inorder()** produce los elementos estrictamente ordenados **{1, 3, 4, 5, 6, 7, 8, 10, 12}**. La salida de **buildBalancedFromSorted** muestra un árbol balanceado. | Árbol Binario de Búsqueda (BST) con propiedad de orden de claves:izq < nodo < der. Operaciones de rotación. | Las búsquedas toman O(h). **buildBalancedFromSorted** construye un árbol óptimo con h = [logsub2(n)] a partir de un vector en O(n) tiempo y espacio. | 
+ | **demo_capitulo5_panorama.cpp** | Uso de un bucle **for (int x : bst)** directo sobre el árbol binario de búsqueda. | Integración de iteradores estándar (estilo STL) sobre estructuras de árboles enlazados mediante el uso de operadores **++**. | El diseño del iterador encapsula la lógica de **succ()**, permitiendo un recorrido completo del árbol en tiempo O(n) y con la flexibilidad sintáctica de C++. |
+ | **demo_heap.cpp** | El vector inicial se transforma en **[1, 3, 2, 7, 5, 8, 10]**. Las sucesivas llamadas a **remove()** extraen los elementos en orden ascendente estricto. | Montículo binario (Min-Heap) representado implícitamente sobre un arreglo/vector secuencial indexado. | El constructor (**heapify**) toma O(n) en tiempo "bottom-up", una mejora de diseño frente a realizar $n$ inserciones individuales (**add**), que costarían O(nlogn). | 
+
+1. En `demo_binary_tree.cpp`, ¿qué salida permite verificar que los recorridos visitan los nodos en el orden esperado?
+ 
+ La salida impresa por **printVector** para cada una de las estrategias. Específicamente, el hecho de que las 4 líneas de salida correspondientes al Inorden coincidan exactamente en su contenido, sin importar si se ejecutaron de manera recursiva o mediante las tres variantes iterativas (**Iterative1**, **Iterative2**, **Iterative3**).
+
+2. ¿Qué parte de la demo permite defender que `succ()` y `pred()` respetan el orden inorden?
+
+ La sección final donde se evalúa el nodo con valor **5**:
+
+   - El inorden teórico del árbol es: **1 4 5 6 7 8 10 12**.
+
+   - La demo evalúa **n5->succ()** y **n5->pred()**, imprimiendo **Sucesor de 5: 6** y **Predecesor de 5: 4**. Estos resultados coinciden con sus vecinos inmediatos en el recorrido inorden.
+
+3. ¿Qué evidencia produce la representación ASCII del árbol?
+
+ Produce la estructura jerárquica y el balance visual del árbol (**std::cout << tree;**). Permite verificar de forma empírica y directa las relaciones de parentesco (cuáles nodos son hijos izquierdos o derechos de quién) y constatar visualmente la altura y profundidad de la estructura antes de que se calculen programáticamente.
+
+4. En `demo_bst.cpp`, ¿qué observable permite defender que el inorden del BST queda ordenado?
+
+ La salida de la función **printVector("BST inorden", bst.inorder());**. Al pasarle al BST el conjunto desordenado **{7, 3, 10, 1, 5, 8, 12, 4, 6}**, el método **inorder()** devuelve un vector cuyos elementos están ordenados de menor a mayor de forma matemática perfecta (**1 3 4 5 6 7 8 10 12**).
+
+5. ¿Qué operaciones de búsqueda se distinguen mejor en la demo del BST: `find`, `findEQ`, `lowerBound` o `upperBound`?
+
+ Se distinguen mejor **lowerBound** y **upperBound**. La demo busca el valor **9** (que no existe en el árbol) y **lowerBound(9)** devuelve exitosamente **10** (el menor elemento mayor o igual a 9). Asimismo, busca **upperBound(8)** y devuelve **10** (el primer elemento estrictamente mayor a 8). Esto demuestra el comportamiento de rango de estas funciones por encima de una búsqueda exacta ordinaria.
+
+6. En `demo_heap.cpp`, ¿qué salida permite defender que el mínimo queda en la raíz?
+
+  1.  La primera posición del vector (índice 0) devuelta por **heap.data()** tras el constructor es el elemento **1** (el mínimo del conjunto inicial).
+
+  2.  La salida consecutiva de **heap.remove()** en el bucle **while**, que extrae e imprime el elemento mínimo disponible en cada paso, vaciando el heap en orden estrictamente ascendente (**0 1 2 3 5 7 8 10**).
+
+7. ¿Qué evidencia permite distinguir entre insertar con `add()` y construir con `heapify()`?
+
+ La disposición interna del vector (**heap.data()**). Al construir con el vector inicial mediante heapify, los elementos se organizan eficientemente desde abajo hacia arriba resultando en una estructura válida para el árbol pero compacta. Al ejecutar **heap.add(0)**, el elemento nuevo rompe momentáneamente la propiedad de orden en la última posición y es forzado a "flotar" (bubble-up) hasta la raíz, alterando el vector a **[0, 1, 2, 3, 5, 8, 10, 7]**.
+
+8. En `demo_capitulo5_panorama.cpp`, ¿qué comparación resume mejor la semana: árbol enlazado, BST o heap?.
+
+ La comparación que demuestra cómo el BST une las ventajas del árbol enlazado con la capacidad de ordenación.
+ Mientras el árbol enlazado genérico carece de orden semántico y el Heap restringe el acceso solo al mínimo (raíz) sacrificando la visibilidad del resto de nodos, el BST provee una estructura enlazada dinámica que permite un recorrido de elementos ordenados lineal y directo (**for (int x : bst)**) compatible con las abstracciones de la biblioteca estándar (STL).
+
+#### Bloque 5 - Pruebas públicas, pruebas internas e invariantes
+
+1. ¿Qué operaciones del BST valida la prueba pública?
+
+ Valida las operaciones principales de un Árbol Binario de Búsqueda (BST):
+   
+   - `Inserción:` **add(x)**.
+
+   - `Eliminación:` **remove(x)**.
+
+   - `Búsqueda y límites:` **findEQ(x)**, **find(x)**, **lowerBound(x)**, **upperBound(x)**, **minNode()**, **maxNode()** y **contains(x)**.
+
+   - `Recorridos:` **inorder()** (en su versión recursiva y 3 variantes iterativas).
+
+   - `Validación estructural:` **isBST()** y **checkParentLinks()**.
+
+   - `Construcción:` **buildBalancedFromSorted()**.
+
+2. ¿Qué casos validan que el BST no acepta duplicados?
+
+ Se valida explícitamente en el primer bloque del archivo público con la línea:
+ ```C++
+         expect(!bst.add(5), "BST no debe aceptar duplicados");
+ ```
+ Previamente ya se había insertado el elemento **5** en la lista inicial **{7, 3, 10, 1, 5, 8, 12, 4, 6}**. Al intentar añadirlo por segunda vez, el método **add(5)** debe retornar **false**.
+
+3. ¿Qué se verifica al comparar el inorden recursivo con las versiones iterativas?
+
+ Se verifica la equivalencia funcional de los algoritmos. Asegura que las tres implementaciones iterativas diferentes (**Iterative1**, **Iterative2**, **Iterative3**) recorren el árbol exactamente en el mismo orden que la versión recursiva estándar, produciendo la secuencia ordenada correcta sin omitir ni duplicar nodos: **{1, 3, 4, 5, 6, 7, 8, 10, 12}**.
+
+4. ¿Qué se espera de `findEQ(8)` en la prueba pública?
+
+ Se espera que localice exactamente el nodo que contiene la clave **8**. La prueba verifica que el puntero devuelto no sea nulo (**nullptr**) y que el valor del campo de datos de ese nodo sea estrictamente igual a **8** (**bst.findEQ(8)->data == 8**).
+
+5. ¿Qué se espera de `lowerBound(9)` y `upperBound(8)`?
+
+ - **lowerBound(9)** (o **find(9)**): Se espera que devuelva el nodo con la clave más pequeña que sea mayor o igual a 9. En este árbol, ese valor es **10**.
+
+ - **upperBound(8)**: Se espera que devuelva el nodo con la clave más pequeña que sea estrictamente mayor que 8. En este árbol, ese valor también es **10**.
+
+6. ¿Qué propiedad se valida con `isBST()`?
+
+ Valida la propiedad de orden del BST: para cualquier nodo N, todos los valores en su subárbol izquierdo deben ser estrictamente menores que el valor de N, y todos los valores en su subárbol derecho deben ser estrictamente mayores que el valor de N.
+
+7. ¿Qué se valida después de eliminar un nodo con `remove()`?
+
+ Tras eliminar el nodo con la clave **3**, la prueba valida tres cosas:
+
+   1. Que el método retorne **true** (borrado exitoso).
+
+   2. Que el árbol mantenga su propiedad de orden (el **inorder()** resultante debe seguir perfectamente ordenado y sin el 3: **{1, 4, 5, 6, 7, 8, 10, 12}**).
+
+   3. Que **contains(3)** devuelva **false**.
+
+   4. Que las conexiones hacia los padres sigan siendo íntegras mediante **checkParentLinks()**.
+
+8. ¿Qué valida `checkParentLinks()` después de borrar, separar o adjuntar subárboles?
+
+ Valida la consistencia bidireccional de los punteros. Asegura que si un nodo A tiene como hijo izquierdo o derecho a un nodo B(A->left == B o A->right == B), entonces el puntero al padre de B apunte correctamente de vuelta a A (B->parent == A). Esto es crucial para garantizar que las operaciones que modifican la estructura del árbol no dejen punteros huérfanos o desactualizados.
+
+9. ¿Qué operaciones del heap valida la prueba pública?
+
+ Valida el algoritmo de construcción masiva u ordenación del heap (**heapify**) al pasarle un vector desordenado en el constructor, la validación de la propiedad de min-heap mediante **isHeap()** e **isHeapArray()**, y la extracción del elemento mínimo a través de **remove()**.
+
+10. ¿Qué demuestra extraer repetidamente de un min-heap hasta vaciarlo?
+
+ Demuestra que el algoritmo de reordenamiento interno tras una remoción (**trickleDown / siftDown**) funciona correctamente. Al vaciar el heap y obtener los elementos en un orden estrictamente ascendente (**{1, 2, 3, 5, 7, 8, 10}**), se comprueba que el elemento en la raíz (**top()**) siempre fue efectivamente el mínimo global remanente. Esto equivale a demostrar el correcto funcionamiento de un Heapsort.
+
+11. ¿Qué operaciones de `BinTree` se validan con `attachAsRC`, `secede` y `removeSubtree`?
+
+ Valida operaciones de cirugía y manipulación de subárboles:
+
+   - **attachAsRC**: Une un árbol externo como el hijo derecho de un nodo, verificando que el tamaño del árbol receptor aumente y el árbol origen quede vacío.
+
+   - **secede**: Desconecta un subárbol completo a partir de un nodo dado, convirtiéndolo en un nuevo árbol independiente, verificando que los tamaños de ambos árboles se actualicen correctamente.
+
+   - **removeSubtree**: Elimina y libera la memoria de un subárbol completo (en este caso la raíz remanente), dejando el árbol anfitrión vacío (**empty()**).
+
+12. ¿Qué agregan las pruebas internas respecto a rotaciones, `bubbleUp`, `trickleDown`, profundidad, altura, sucesor y predecesor?
+
+ Las pruebas internas añaden validaciones de bajo nivel y primitivas estructurales que las pruebas públicas solo asumen indirectamente:
+
+   - `Rotaciones:` Valida **rotateLeft** y **rotateRight**, asegurando que alteren la estructura (cambiando la raíz) pero preserven el orden del BST.
+
+   - **bubbleUp:** Al insertar elementos uno a uno en el heap **{5, 4, 3, 2, 1}**, se valida que el camino flotante hacia arriba funcione llevando el 1 a la raíz.
+
+   - `Propiedades métricas:` Valida el cálculo exacto de la profundidad de un nodo (**depth()**), la altura estructural (**height**), y el tamaño de un subárbol específico (**subtreeSize()**).
+
+   - `Navegación por punteros:` Valida la obtención de los extremos inorden (**firstNode()** y **lastNode()**) y la capacidad de iterar el árbol de forma secuencial sin usar recursión ni pilas auxiliares, saltando directamente a través de **iterateBySuccessor()** (sucesor) y **iterateByPredecessor()** (predecesor).
+
+13. ¿Qué sí demuestra pasar las pruebas públicas?
+
+ Demuestra que la interfaz externa de tus estructuras de datos cumple con los requisitos funcionales básicos para los casos de prueba específicos provistos (caminos felices y operaciones estándar de inserción, borrado y ordenamiento sobre conjuntos de datos pequeños controlados).
+
+14. ¿Qué no demuestra pasar las pruebas públicas?
+
+ No demuestra:
+ - `Ausencia de errores en casos esquina (edge cases):` Como árboles vacíos, árboles con un solo nodo, borrado de nodos inexistentes, o inserciones en orden estrictamente decreciente/creciente (árboles degenerados en listas).
+ - `Correcta complejidad temporal (O):` Un método podría estar implementado de manera ineficiente (por ejemplo, un **find** lineal O(n) en vez de logarítmico O(log n)) y aun así pasar la prueba si el resultado final es correcto.
+ - `Gestión eficiente de memoria:` Podría haber fugas de memoria (memory leaks) al destruir nodos o subárboles (como en **removeSubtree** o **secede**) que los asserts de C++ no detectan directamente a menos que se use una herramienta como Valgrind o Sanitizers.
+
+15. ¿Por qué una defensa correcta debe mencionar invariantes y complejidad además de resultados observables?.
+
+ Porque en estructuras de datos, un resultado observable correcto (un test en "OK") es solo la mitad del trabajo.
+ 
+   1. `Invariantes:` Son las reglas fundamentales que garantizan que la estructura se mantiene estable tras cualquier operación (ej. la propiedad del BST o los enlaces al padre). Si una operación rompe temporalmente un invariante y no lo repara, el siguiente método fallará catastróficamente.
+   2. `Complejidad:` El propósito de usar árboles o heaps en lugar de vectores simples es mejorar la eficiencia de las búsquedas, inserciones y extracciones de O(n) a O(logn). Una defensa técnica sólida debe probar que el código no solo es correcto matemáticamente, sino que cumple con las cotas de rendimiento asintótico requeridas para procesar grandes volúmenes de datos.
+   
