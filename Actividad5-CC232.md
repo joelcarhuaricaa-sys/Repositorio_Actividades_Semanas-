@@ -881,3 +881,271 @@ Para que se cumpla de forma exacta la igualdad:
  | Búsqueda (Peor Caso) | O(log n) | O(n) |
  | Inserción (Peor Caso) | O(log n) | O(n) |
  | Eliminación (Peor Caso) | O(log n) | O(n) |
+
+#### Bloque 8 - Heap binario y representación implícita
+
+1. Explica por qué un heap binario puede almacenarse en un `std::vector` sin punteros.
+
+ Un heap binario es un árbol binario completo (todos los niveles llenos excepto posiblemente el último, que se llena de izquierda a derecha). Esta estructura regular permite mapear el árbol a posiciones secuenciales en un vector:
+
+ Nivel 0: índice 0 (1 elemento)
+ Nivel 1: índices 1-2 (2 elementos)
+ Nivel 2: índices 3-6 (4 elementos)
+ Nivel k: índices 2^(k) −1 a 2^(k+1) −2
+
+ Al no haber espacios, se elimina la necesidad de punteros explícitos. Las posiciones se determinan mediante cálculos aritméticos, no referencias.
+
+2. Demuestra las fórmulas:
+
+ Dado un nodo en posición i:
+
+ `Left child en posición 2i+1:`
+ - El nodo en posición i tiene i nodos antes de él
+ - Cada uno tiene 2 hijos, más los de niveles anteriores
+ - Nivel de i:[logsub2(i+1)]
+ - Total de nodos en niveles completos anteriores: 2^(k)-1
+ donde k=[logsub2(i+1)]
+ - Posicion del primer hijo del nodo en posicion i resulta en 2i +1 
+ 
+ `Right child en posición 2i+2:`
+ - Simplemente el siguiente después del hijo izquierdo:2i+1+1=2i+2
+ 
+ `Parent en posición (i−1)/2:`
+ - Si i es hijo izquierdo: i=2p+1, entonces p=(i−1)/2 
+ - Si i es hijo derecho: i=2p+2, entonces p=(i−2)/2=(i−1)/2 (división entera) 
+ 
+3. Define la propiedad de min-heap.
+
+ Un min-heap satisface: para cada nodo, su valor es ≤ al de sus hijos.
+
+ Formalmente: data[i]≤data[left(i)] y data[i]≤data[right(i)] para todo i.
+
+ En `BinaryHeap.h`, la función **isHeap()** verifica esto comparando cada nodo con sus hijos.
+
+4. Explica por qué `top()` devuelve el mínimo.
+
+ Porque en un min-heap válido:
+
+ - Cada padre es ≤ sus hijos (propiedad min-heap)
+ - La raíz (índice 0) es el único nodo sin padre
+ - Por transitoriedad, la raíz es ≤ cualquier otro nodo
+
+5. Explica paso a paso cómo `bubbleUp(i)` restaura la propiedad de heap después de insertar.
+ 
+ ```C++
+ bubbleUp(i):
+  mientras i > 0:
+    p = parent(i)
+    si data[i] >= data[p]:  // relación restaurada
+      break
+    intercambiar data[i] y data[p]
+    i = p
+ ```
+ Paso a paso con inserción de 0 en **{1,3,2,7,5,8,10}**:
+ 1. Insertar 0 al final -> **{1,3,2,7,5,8,10,0}**
+ 2. **bubbleUp(7)**: i=7, p=3, data[7]=0 < data[3]=7 → intercambiar
+     - Resultado: **{1,3,2,0,5,8,10,7}**, i=3
+ 3. **bubbleUp(3)**: i=3, p=1, data[3]=0 < data[1]=3 → intercambiar
+     - Resultado: **{1,0,2,3,5,8,10,7}**, i=1
+ 4. **bubbleUp(1)**: i=1, p=0, data[1]=0 < data[0]=1 → intercambiar
+     - Resultado: **{0,1,2,3,5,8,10,7}**, i=0
+ 5. i=0: bucle termina
+
+ **Invariante**: Cada paso mueve el nuevo elemento hacia la raíz hasta restaurar la propiedad
+ 
+6. Explica paso a paso cómo `trickleDown(i)` restaura la propiedad de heap después de eliminar la raíz.
+
+ ```C++
+ trickleDown(i):
+  mientras true:
+    best = i
+    l = left(i), r = right(i)
+    si l existe y comp(data[l], data[best]):
+      best = l
+    si r existe y comp(data[r], data[best]):
+      best = r
+    si best == i:
+      break  // propiedad restaurada
+    intercambiar data[i] y data[best]
+    i = best
+ ```
+ Paso a paso: Eliminar raíz de **{1,3,2,7,5,8,10}**, mover 10 a raíz -> **{10,3,2,7,5,8}**:
+
+   1. **trickleDown(0)**: i=0, best=0
+     - l=1: comp(3, 10)=true -> best=1
+     - r=2: comp(2, 3)=true -> best=2
+     - best≠i: intercambiar 10↔2 -> **{2,3,10,7,5,8}**, i=2
+
+   2. **trickleDown(2)**: i=2, best=2
+     - l=5: comp(8, 10)=true -> best=5
+     - r=6: no existe
+     - best≠i: intercambiar 10↔8 → {2,3,8,7,5,10}, i=5
+   
+   3. trickleDown(5): i=5, best=5
+     - l=11: no existe
+     - Termina 
+
+7. Explica por qué `remove()` debe mover el último elemento a la raíz antes de aplicar `trickleDown(0)`.
+
+ ```C++
+ T out = data_.front();        // guardar raíz
+ data_.front() = data_.back(); // mover último a raíz
+ data_.pop_back();             // eliminar último
+ if (!data_.empty()) {
+   trickleDown(0);             // restaurar
+ } 
+ ```
+ Razones:
+
+ - **Eficiencia:** Eliminar de cualquier posición interna requeriría reorganización lineal. El último nodo es O(1).
+
+ - **Mantiene estructura:** El árbol sigue siendo completo (todos los niveles llenos excepto el último, que se llena de izquierda a derecha).
+
+ - **Parcialmente válido:** Mover el último viola potencialmente la propiedad solo en la raíz y su rama. **trickleDown** restaura eficientemente.
+
+ Si se eliminara un nodo interno directamente, se crearían huecos y se destruiría la estructura de vector continuo.
+
+8. Explica qué verifica `isHeap()`.
+
+ ```C++
+ for (int i = 0; i < size; ++i) {
+  int l = left(i), r = right(i);
+  if (l < size && comp(data[l], data[i]))
+    return false;  // hijo izquierdo viola propiedad
+  if (r < size && comp(data[r], data[i]))
+    return false;  // hijo derecho viola propiedad
+ }
+ return true;
+ ```
+ Comprueba que ningún hijo es menor que su padre, asegurando la integridad de la estructura.
+
+9. Compara construir un heap insertando `n` elementos con construirlo usando `heapify()`.
+
+ | Aspecto | Inserccion individual | heapify() | 
+ | :--- | :--- | :--- | 
+ | Algoritmo | Agregar elemento, bubbleUp()	| Desordenar luego trickleDown() |
+ | Complejidad | O(nlogn) peor caso	| O(n) siempre |
+ | Usar cuando | Inserción incremental | Construcción de una sola vez |
+ | Overhead	| Múltiples rebalanceos	| Un solo recorrido |
+ 
+10. Justifica por qué insertar `n` elementos uno por uno cuesta `O(n log n)` en el peor caso.
+ 
+ Cada inserción en el heap coloca el nuevo valor al final del vector y luego hace **bubbleUp**.
+
+  - En el peor caso, el nuevo elemento sube desde la hoja hasta la raíz.
+  - La altura del heap con n elementos es O(log n).
+  - Por tanto, cada inserción puede costar hasta O(log n) comparaciones/intercambios.
+ 
+ Si haces eso **n** veces:
+
+   - operaciones totales = **n * O(log n)** = **O(n log n)**
+ 
+ Otra forma de verlo:
+
+  - El primer elemento no necesita subir.
+  - El elemento **k** puede recorrer hasta la altura actual del heap, que es **O(log k)**.
+  - La suma de alturas desde k=1 hasta n es aproximadamente:
+          
+          log 1 + log 2 + ... + log n = log(n!)
+ 
+  Y por Stirling, **log(n!) = Θ(n log n)**.
+
+  Así, insertar todos los elementos uno a uno lleva **Θ(n log n)** en el peor caso.
+
+11. Justifica por qué `heapify()` puede ejecutarse en `O(n)`.
+
+ ```C++
+ for (int i = data_.size() / 2 - 1; i >= 0; --i) {
+  trickleDown(i);
+ }
+ ```
+ - **heapify()** no hace **bubbleUp** para cada elemento, sino que recorre los nodos internos desde el último padre hacia la raíz y aplica **trickleDown**.
+ - Los nodos más cerca de las hojas son muchos, pero cada uno recorre muy poco: casi 0 niveles.
+ - Los nodos cercanos a la raíz son pocos, y aunque cada uno pueda bajar más niveles, hay muy pocos de ellos.
+ - El costo total se puede ver como:
+     - muchos nodos con costo pequeño +
+     - pocos nodos con costo grande.
+ - Esa suma converge a una cantidad proporcional a **n**, no a **nlogn**.
+
+ En otras palabras: **heapify()** aprovecha la estructura completa del árbol para equilibrar más trabajo en nodos baratos y menos trabajo en nodos caros, lo que da un costo total lineal **O(n)**.
+
+12. Ejecuta una extracción completa del heap construido con `{7, 3, 10, 1, 5, 8, 2}` y explica por qué la secuencia extraída sale ordenada.
+
+ Construcción inicial (heapify):
+
+ Entrada: {7, 3, 10, 1, 5, 8, 2}
+        
+         7             ->  After trickleDown(2): 7 -> 8
+        / \                                      / \
+       3  10           ->  After trickleDown(1): 10 -> 3
+      / \ /  \                                 / \
+     1  5 8  2         ->  After trickleDown(0): 7 -> 1
+    
+ Heap válido: {1, 3, 2, 7, 5, 8, 10}
+
+ Extracciones:
+ | Paso | **remove** | heap despues | Operacion |  
+ | :--- | :--- | :--- | :--- |
+ | 1 | 1 | {2,3,10,7,5,8} | Mover 10 a raíz, trickleDown |
+ | 2 | 2 | {3,7,8,10,5}	| Mover 8 a raíz, trickleDown |
+ | 3 | 3 | {5,7,8,10} | Mover 10 a raíz, trickleDown | 
+ | 4 | 5 | {7,10,8}	| Mover 8 a raíz, trickleDown |
+ | 5 | 7 | {8,10} | Mover 10 a raíz, trickleDown | 
+ | 6 | 8 | {10} | Único nodo |
+ | 7 | 10 | {} | Vacio | 
+
+ Secuencia extraída: {1, 2, 3, 5, 7, 8, 10}  ORDENADA
+ 
+ ¿Por qué sale ordenada?
+
+  - Cada **remove()** extrae el mínimo actual (propiedad min-heap)
+  - El heap se revalida tras cada extracción
+  - El mínimo de cada subconjunto restante sale secuencialmente
+  - Esto es equivalente a HeapSort
+
+13. Compara el heap con el BST: ¿cuál estructura conviene para consultar mínimo repetidamente y cuál conviene para búsquedas ordenadas?.
+
+  - Para consultar el mínimo repetidamente, el heap es mejor porque la raíz siempre contiene el menor elemento y **top()** es **O(1)**.
+  - Para búsquedas ordenadas o para recorrer todos los elementos en orden, el BST es mejor porque mantiene la relación de orden completa y su recorrido inorden produce la secuencia ordenada.
+  - En resumen:
+     - si necesitas extraer o mirar prioridades a menudo -> usa un heap,
+     - si necesitas buscar valores específicos o generar un orden completo -> usa un BST.
+
+#### Bloque 9 - Cierre comparativo y preparación de sustentación
+
+ Al pasar de listas, pilas y colas a árboles binarios, heaps y BST cambia el enfoque de estructuras lineales a estructuras jerárquicas.
+
+ - En árboles enlazados cada nodo guarda punteros a sus hijos y a veces a su padre, lo que permite navegar la forma del árbol sin usar índices.
+ - En heaps y otras representaciones implícitas, el árbol se guarda en un arreglo contiguo y las relaciones padre/hijo se deducen por fórmulas como **2*i+1**, **2*i+2** y **(i-1)/2**.
+ - La propiedad estructural es que el árbol sea completo o bien formado; la propiedad de orden es que los valores respeten una relación entre padres e hijos (por ejemplo, BST o min-heap).
+ - Los recorridos convierten un árbol en una secuencia porque visitan nodos en un orden definido: preorden, inorden, postorden o por niveles generan listas lineales de valores.
+ - Mantener alturas y enlaces **parent** es importante en árboles enlazados para calcular depth/height, actualizar subárboles y soportar operaciones como **succ()/pred()**.
+ - En un BST, la propiedad de orden completa permite búsqueda ordenada y hace que el recorrido inorden produzca una secuencia ordenada de valores.
+ - En un heap, la prioridad es lo importante: **add** y **remove** cuestan **O(log n)** en el peor caso porque restauran la propiedad de heap, mientras que **heapify** puede construirse en **O(n)** usando **trickleDown** desde los nodos internos.
+ - Para defender correctitud, usaría evidencia combinada: pruebas públicas/internas, demos que muestran salidas esperadas, invariantes como **isBST()/isHeap()**, trazados manuales de operaciones y argumentos de complejidad.
+
+### Autoevaluación breve
+ 
+ - Qué puedo defender con seguridad:
+     - La diferencia entre representación enlazada y representación implícita.
+     - Por qué **BinaryHeap** usa **bubbleUp** y **trickleDown** y cómo mantienen la propiedad de heap.
+     - Por qué el recorrido inorden en un BST produce una secuencia ordenada.
+     - La complejidad de **add/remove** en heap y de **heapify()**.
+ 
+ - Qué todavía confundo:
+     - Detalles específicos de los tres métodos de inorden iterativo.
+     - El comportamiento exacto de **splice** en la eliminación de un BST.
+     - Cómo se actualizan las alturas en todos los casos de **BinTree**.
+
+ - Qué evidencia usaría en una sustentación:
+     - Resultados de **demo_heap.cpp** y **demo_bst.cpp**.
+     - Pruebas públicas e internas (**test_public_week5.cpp** y **test_internal_week5.cpp**).
+     - Invariantes **isBST()** e **isHeap()**.
+     - Trazados manuales de **bubbleUp**, **trickleDown**, **remove()** y recorrido inorden.
+
+ - Qué parte del código me parece más importante para revisar otra vez:
+
+     - **Semana5/include/BinaryHeap.h** 
+     - **Semana5/include/BinarySearchTree.h**
+     - **Semana5/include/BinaryTree.h**
+     - **Semana5/include/BinTree.h**
