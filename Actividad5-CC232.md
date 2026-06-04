@@ -629,4 +629,255 @@ Para que se cumpla de forma exacta la igualdad:
  
    1. `Invariantes:` Son las reglas fundamentales que garantizan que la estructura se mantiene estable tras cualquier operación (ej. la propiedad del BST o los enlaces al padre). Si una operación rompe temporalmente un invariante y no lo repara, el siguiente método fallará catastróficamente.
    2. `Complejidad:` El propósito de usar árboles o heaps en lugar de vectores simples es mejorar la eficiencia de las búsquedas, inserciones y extracciones de O(n) a O(logn). Una defensa técnica sólida debe probar que el código no solo es correcto matemáticamente, sino que cumple con las cotas de rendimiento asintótico requeridas para procesar grandes volúmenes de datos.
-   
+
+#### Bloque 6 - Lectura cercana: `BinNode`, `BinTree` y `BinaryTree`
+
+1. En `BinNode`, ¿qué invariantes deben mantenerse entre `parent`, `left` y `right`?
+
+ Para que el árbol sea estructuralmente válido, los punteros deben ser siempre recíprocos. Es decir:
+
+   - Si un nodo **A** tiene un hijo izquierdo **B** (**A->left == B**), entonces el padre de **B** debe ser **A** (**B->parent == A**).
+
+   - Si un nodo A tiene un hijo derecho **C** (**A->right == C**), entonces el padre de **C** debe ser **A** (**C->parent == A**).
+
+   - Si un nodo no tiene padre (**parent == nullptr**), obligatoriamente debe ser la raíz del árbol.
+
+2. ¿Por qué `insertAsLC` e `insertAsRC` deben rechazar una inserción cuando el hijo correspondiente ya existe?
+
+ Los métodos **insertAsLC** e **insertAsRC** lanzan una excepción (**std::logic_error**) si el hijo ya existe para prevenir la pérdida de memoria (memory leaks) y la desconexión del árbol. Si sobreescribieran el puntero directamente sin liberar el subárbol existente, todos los nodos que colgaban de ese hijo quedarían flotando en la memoria (inaccesibles pero ocupando espacio). Para reemplazar un hijo de forma segura, primero se debe usar explícitamente **removeSubtree** o **secede**.
+
+3. Explica cómo `size()` de `BinNode` recorre el subárbol.
+
+ El método **size()** de **BinNode** calcula de forma recursiva el tamaño total del subárbol del cual dicho nodo es raíz (recorrido en postorden):
+ ```C++
+ const std::size_t ls = (left == nullptr) ? 0U : left->size();
+ const std::size_t rs = (right == nullptr) ? 0U : right->size();
+ return 1U + ls + rs;
+ ```
+   1. Si tiene hijo izquierdo, delega la llamada a **left->size()** (obtiene **ls**).
+
+   2. Si tiene hijo derecho, delega la llamada a **right->size()** (obtiene **rs**).
+
+   3. Finalmente, suma **1U** (el nodo actual) más el tamaño de ambos lados (**ls + rs**) y devuelve el total.
+
+4. Explica cómo funcionan `leftmost()` y `rightmost()`.
+
+ `leftmost():` Se ubica en el nodo actual y se desplaza iterativamente a través de los punteros **left** (**u = u->left**) mientras estos no sean **nullptr**. Retorna el nodo que se encuentra más a la izquierda, que equivale al primer elemento en inorden de ese subárbol.
+
+ `rightmost():` Realiza el proceso inverso. Se desplaza iterativamente a través de los punteros **right** (**u = u->right**) hasta llegar al final. Retorna el nodo más a la derecha, el cual es el último elemento en inorden de ese subárbol.
+
+5. Explica paso a paso cómo funciona `succ()`.
+
+  1. `Tiene hijo derecho (right != nullptr)`: El sucesor es el nodo más a la izquierda de ese subárbol derecho. El código salta a **right** y ejecuta un bucle hacia la izquierda (**while (s->left != nullptr) s = s->left;**).
+
+  2. `No tiene hijo derecho:` El sucesor está hacia arriba. El código sube por la línea de padres mediante un bucle (**while (s->isRightChild()) s = s->parent;**). El bucle se detiene en el primer nodo que no sea un hijo derecho (es decir, que sea un hijo izquierdo de alguien). El padre de este último nodo (**s->parent**) es el sucesor. Si se llega a la raíz y nunca fue hijo izquierdo, **s->parent** será **nullptr**, lo que significa que el nodo original era el último del árbol.
+
+6. Explica paso a paso cómo funciona `pred()`.
+
+ Es el espejo exacto de **succ()**, buscando el nodo anterior en inorden:
+
+   1. `Tiene hijo izquierdo (left != nullptr):` El predecesor es el nodo más a la derecha de ese subárbol izquierdo. Salta a **left** y hace un bucle hacia la derecha (**while (s->right != nullptr) s = s->right;**).
+ 
+   2. `No tiene hijo izquierdo:` Sube por el árbol mientras el nodo actual sea un hijo izquierdo (**while (s->isLeftChild()) s = s->parent;**). Al salir del bucle (cuando encuentra un nodo que es hijo derecho de su padre), el predecesor final es ese padre (**s->parent**).
+
+7. En `BinTree`, ¿qué papel cumplen `root_` y `size_`?
+
+  - `root_:` Es un puntero al nodo raíz del árbol (`BinNode<T>*`). Es el único punto de entrada para cualquier operación de recorrido, búsqueda, inserción o destrucción. Si es **nullptr**, el árbol está vacío.
+  
+  - `size_:` Es un contador entero de tipo **std::size_t** que mantiene el número actual de nodos en el árbol. Permite que la función **empty()** y el método **size()** de la clase **BinTree** respondan en tiempo constante O(1) en lugar de tener que recorrer todo el árbol para contarlos.
+
+8. Explica qué hace `updateHeight(Node*)`.
+
+ Calcula y actualiza la propiedad **height** (altura) de un nodo específico basándose en la altura de sus hijos directos. La altura de un nodo es la distancia más larga hacia una hoja.
+ 
+  - Utiliza la función auxiliar **stature()**, que devuelve **-1** si el hijo es **nullptr**.
+  - Aplica la fórmula: height = 1 + max(altura izquierda,altura derecha)$.
+  - Almacena este valor en **node->height** y lo retorna.
+
+9. Explica qué hace `updateHeightAbove(Node*)` y por qué sube hacia la raíz.
+
+ Este método recibe un nodo y ejecuta un bucle **while (node != nullptr)** que llama a **updateHeight(node)** y luego avanza a **node = node->parent**.
+
+ `Por qué sube hacia la raíz:` Al insertar, eliminar o modificar un nodo, la altura de ese subárbol específico puede cambiar. Este cambio potencialmente altera la altura de su padre, la del abuelo, y así sucesivamente hacia arriba. Sube por la cadena de ancestros recalculando las alturas para garantizar que la propiedad **height** de todos los nodos afectados se mantenga matemáticamente correcta hasta llegar a la raíz.
+
+10. Explica cómo `attachAsLC` o `attachAsRC` transfieren un subárbol desde un árbol hacia otro.
+
+ Supongamos **attachAsLC(parent, subtree)**:
+
+   1. Valida que el **parent** no sea nulo y que no tenga ya un hijo izquierdo.
+   2. Extrae la raíz del árbol secundario y la conecta: **parent->left = subtree.root_**.
+   3. Establece el puntero hacia arriba: **subtree.root_->parent = parent**.
+   4. Absorbe el tamaño: **size_ += subtree.size_**.
+   5. Actualiza las alturas del árbol principal desde **parent** hacia arriba (**updateHeightAbove(parent)**).
+   6. Desconexión segura: Para evitar que el objeto **subtree** intente borrar estos nodos cuando sea destruido (salga de alcance), se limpian sus variables internas: **subtree.root_ = nullptr**; y **subtree.size_ = 0;**. El subárbol ha cambiado de dueño completamente.
+
+11. Explica qué diferencia hay entre `removeSubtree` y `secede`.
+
+  - `removeSubtree(node):` Desconecta el nodo seleccionado de su padre y elimina físicamente de la memoria (usando **delete**) toda la estructura de nodos que cuelga de él. Reduce el **size_** del árbol original según la cantidad de nodos destruidos.
+
+  - `secede(node):` Desconecta el nodo de su padre pero no destruye nada. En su lugar, empaqueta ese nodo y todo su subárbol dentro de una nueva instancia de **BinTree<T>** independiente que es devuelta por la función. El árbol original reduce su **size_**, pero los nodos siguen vivos en el nuevo árbol.
+
+12. Explica por qué `secede` no debe destruir los nodos desprendidos.
+
+ Porque el propósito de **secede** es la escisión o separación, no la eliminación. Su objetivo es aislar una rama para que el usuario pueda seguir utilizándola como un árbol binario completamente nuevo y válido. Si destruyera los nodos, la función devolvería un árbol roto lleno de punteros colgantes (dangling pointers).
+
+13. Explica por qué `removeSubtree` sí debe liberar nodos.
+
+ Porque el propósito de este método es la eliminación definitiva. En C++, la memoria dinámica asignada con **new** no se libera sola. Si **removeSubtree** simplemente desconectara los nodos sin llamar a la función destructora recursiva **destroy(node)**, esos bloques de memoria se quedarían permanentemente bloqueados en el sistema sin que nadie pueda acceder a ellos ni reutilizarlos.
+
+14. Explica qué verifica `checkParentLinks()`.
+
+ Es una función de aserción para depuración. Recorre recursivamente todo el árbol verificando que para cada nodo **N**, el puntero **N->left->parent** (si existe) y **N->right->parent** (si existe) apunten de vuelta exactamente a **N**. También verifica que la raíz del árbol tenga **parent == nullptr**. Retorna **true** si todas las relaciones de parentesco son bilaterales y correctas, o **false** si el árbol sufre de corrupción de punteros.
+
+15. En `BinaryTree`, explica cómo se implementan `firstNode`, `lastNode`, `nextNode` y `prevNode`.
+
+ - `firstNode():` Retorna el primer nodo del recorrido inorden. Si el árbol no está vacío, invoca de manera directa a **root_->leftmost()**.
+
+ - `lastNode():` Retorna el último nodo del recorrido inorden. Invoca a **root_->rightmost()**.
+
+ - `nextNode(node):` Retorna el sucesor inorden llamando internamente a **node->succ()**.
+
+ - `prevNode(node):` Retorna el predecesor inorden llamando internamente a **node->pred()**.
+
+16. Explica por qué un iterador basado en `succ()` produce recorrido inorden.
+
+ Por definición matemática, el recorrido inorden visita un árbol en la secuencia: Subárbol Izquierdo -> Raíz-> Subárbol Derecho.
+ La función **succ()** está diseñada específicamente para calcular cuál es el "siguiente" nodo respetando estrictamente esta secuencia. Al inicializar el iterador en **firstNode()** (**leftmost()**) y hacer que el operador de incremento (**operator++**) avance asignando **current_ = current_->succ()**, el iterador se ve forzado a visitar los nodos en el orden exacto de la secuencia inorden.
+
+17. Explica qué aporta `asciiArt()` para depuración y sustentación.
+
+ El método **asciiArt()** genera una representación visual en formato de texto plano (utilizando caracteres como **├──**, **└──**, **│**) que muestra la estructura jerárquica del árbol rotada 90 grados.
+
+   - `Para depuración (Debugging):` Permite al desarrollador ver de un solo vistazo la forma real del árbol en la consola tras realizar inserciones, rotaciones o eliminaciones. Es infinitamente más rápido detectar un hijo mal colocado viendo el dibujo que inspeccionando punteros en un depurador línea por línea.
+
+    - `Para sustentación:` Sirve para demostrar de forma empírica y didáctica el comportamiento del árbol ante un evaluador o usuario. Se puede imprimir el estado del árbol antes y después de una operación compleja para validar visualmente que las reglas de la estructura de datos se cumplen.
+
+#### Bloque 7 - Árbol binario de búsqueda: búsqueda, eliminación y rotaciones
+
+1. Define formalmente la propiedad BST.
+
+ Para cualquier nodo $u$ en un Árbol Binario de Búsqueda (BST):
+ - Si v es un nodo en el subárbol izquierdo de u, entonces v.data<=u.data(o v.data < u.data si no se permiten duplicados).
+ - Si v es un nodo en el subárbol derecho de u, entonces v.data=>u.data(o v.data > u.data si no se permiten duplicados).
+
+2. Explica por qué el recorrido inorden de un BST debe producir una secuencia no decreciente.
+
+ El recorrido inorden sigue el patrón: Izquierda -> Raíz -> Derecha.
+ Por la propiedad BST, todos los elementos a la izquierda son menores que la raíz, y todos los de la derecha son mayores. Al aplicar esta definición de manera recursiva, garantizamos que ningún elemento procesado más tarde sea menor que uno procesado tempranamente, resultando estrictamente en una secuencia no decreciente (ordenada).
+
+3. Explica la diferencia entre `find`, `findEQ`, `lowerBound` y `upperBound`.
+
+ - `findEQ(x):` Busca una coincidencia exacta. Si no existe un nodo con valor idéntico a **x**, devuelve **nullptr**.
+ - `lowerBound(x):` Busca el primer elemento que sea mayor o igual a **x** (=>x).
+ - `upperBound(x):` Busca el primer elemento que sea estrictamente mayor que **x** (> x).
+ - `find(x):` En tu implementación, está mapeado directamente para comportarse igual que **lowerBound(x)**.
+
+4. Explica por qué `findEQ(x)` puede fallar aunque `lowerBound(x)` no falle.
+
+ Si buscas un valor **x** que no existe en el árbol, pero sí existen valores mayores a él:
+
+   - **findEQ(x)** recorrerá el árbol hasta chocar con un **nullptr** y devolverá **nullptr** (falla).
+
+   - **lowerBound(x)** guardará el último nodo donde giró a la izquierda (el ancestro más cercano que es mayor que x) en la variable **candidate** y lo devolverá con éxito.
+
+5. Construye manualmente el BST que se obtiene al insertar: `7, 3, 10, 1, 5, 8, 12, 4, 6`.
+
+ Insertando secuencialmente: 7, 3, 10, 1, 5, 8, 12, 4, 6
+
+         7
+        / \
+       3   10
+      / \  / \
+     1   5 8  12
+        / \
+       4   6
+
+6. Escribe el inorden, preorden, postorden y recorrido por niveles de ese árbol.
+
+ - Inorden: **1, 3, 4, 5, 6, 7, 8, 10, 12** (Siempre ordenado de menor a mayor).
+
+ - Preorden: **7, 3, 1, 5, 4, 6, 10, 8, 12** (Raíz, Izquierda, Derecha).
+
+ - Postorden: **1, 4, 6, 5, 3, 8, 12, 10, 7** (Izquierda, Derecha, Raíz).
+
+ - Por niveles: **7, 3, 10, 1, 5, 8, 12, 4, 6** (Lectura horizontal por capas).
+
+7. Simula `lowerBound(9)` y `upperBound(8)` paso a paso.
+
+ `Simulación de` **lowerBound(9)**
+ - Inicio en raíz **7**. Como 9 > 7, vamos a la derecha. **candidate = nullptr**.
+ - Nodo actual **10**. Como 9 < 10, guardamos **candidate = 10** y vamos a la izquierda.
+ - Nodo actual **8**. Como 9 > 8, vamos a la derecha.
+ - Llegamos a **nullptr**. Finaliza el ciclo.
+ - Resultado: Devuelve **candidate** que es **10**.
+ 
+ `Simulación de` **upperBound(8)**
+ - Inicio en raíz **7**. Como 8 > 7, vamos a la derecha.
+ - Nodo actual **10**. Como 8 < 10, guardamos **candidate = 10** y vamos a la izquierda.
+ - Nodo actual **8**. Al evaluar **comp_(8, 8)** da falso, entra al **else** y vamos a la derecha.
+ - Llegamos a **nullptr**. Finaliza el ciclo.
+ - Resultado: Devuelve **candidate** que es **10**.
+
+8. Explica qué casos de eliminación existen en un BST: hoja, un hijo, dos hijos.
+
+ - Nodo Hoja: No tiene hijos. Se desconecta de su padre y se elimina directamente.
+
+ - Nodo con un solo hijo: Se puentea al hijo directamente con el padre del nodo a eliminar.
+
+ - Nodo con dos hijos: No se puede eliminar su posición física directamente. Se busca su sucesor inorden (el nodo más a la izquierda de su subárbol derecho). Se copia el valor del sucesor en el nodo original, y luego se elimina físicamente el sucesor (el cual garantizadamente cae en el caso de "hoja" o "un solo hijo").
+
+9. Explica qué papel cumple `splice` durante una eliminación.
+
+ **splice(node)** es la función encargada de realizar la desconexión física de un nodo que tiene como máximo un hijo. Conecta directamente al único hijo vivo (o **nullptr**) con el padre del nodo que se va a eliminar, reestructurando los punteros y actualizando las alturas correspondientes mediante **updateHeightAbove**.
+
+10. Después de eliminar una clave, ¿qué invariantes deben seguir siendo ciertos?
+
+ Tras un **remove**, se deben preservar tres cosas:
+
+   1. Propiedad BST: El orden relativo de todos los nodos remanentes debe seguir intacto.
+
+   2. Integridad de enlaces: Los punteros **left**, **right** y **parent** deben apuntar correctamente a sus nuevos familiares directos.
+
+   3. Consistencia de metadata: El tamaño (**size_**) debe disminuir en 1 y las alturas (**height**) de los ancestros afectados deben recalcularse.
+
+11. Explica por qué `remove(3)` en las pruebas debe conservar el inorden ordenado.
+
+ El nodo 3 tiene dos hijos (1 y 5). El algoritmo busca su sucesor inorden, que es 4. Copia el valor 4 a la posición donde estaba el 3, y luego hace un splice del nodo 4 original. El árbol resultante mantiene la propiedad BST de manera perfecta:
+
+         7
+        / \
+       4   10
+      / \  / \
+     1   5 8  12
+          \
+           6
+
+12. Explica qué hace `rotateLeft`.
+
+ Realiza una rotación hacia la izquierda sobre el nodo u. El hijo derecho de u (llamémoslo w) pasa a ocupar la posición de u, u se convierte en el hijo izquierdo de w, y el antiguo subárbol izquierdo de w se transfiere para convertirse en el nuevo subárbol derecho de u.
+
+13. Explica qué hace `rotateRight`.
+
+ Realiza una rotación hacia la derecha sobre el nodo u. El hijo izquierdo de u (w) sube a tomar el lugar de u, u baja a ser el hijo derecho de w, y el antiguo subárbol derecho de w pasa a ser el nuevo subárbol izquierdo de u.
+
+14. Demuestra que una rotación local preserva la propiedad BST.
+
+ Tomemos una estructura genérica para **rotateLeft(A)**:
+ - `Antes:` El nodo A tiene un hijo derecho B. Los subárboles son Tsub1 (izq de A), Tsub2 (izq de B), y Tsub3 (der de B).
+ - `Orden inicial:` Tsub1 < A < Tsub2 < B < Tsub3.
+ - `Después de rotateLeft(A):` B es la raíz, su hijo izquierdo es A. Los subárboles quedan: Tsub1 (izq de A), Tsub2 (der de A), y Tsub3 (der de B).
+ - `Nuevo orden:` Tsub1 < A < Tsub2 (se cumple para A) y todo eso es menor que B, que a su vez es menor que Tsub3 (se cumple para B).
+ - `Conclusión:` El orden lógico Tsub1 < A < Tsub2 < B < Tsub3 no varió en absoluto.
+
+15. Explica para qué sirve construir un BST balanceado desde un arreglo ordenado.
+
+ Construir un árbol desde un vector ordenado dividiendo recursivamente por la mitad (**mid**) asegura que el árbol resultante tenga la mínima altura posible (O(log n)). Esto previene que el árbol sufra el peor caso de degradación si los elementos se hubieran insertado uno por uno en orden secuencial.
+
+16. Compara el costo de búsqueda en un BST balanceado y en un BST degenerado.
+
+ | Operacion/Caso | BST Perfectamente Balanceado | BST Degenerado(Lista Enlazada) |
+ | :--- | :--- | :--- | 
+ | Altura estructural (h) | O(logn) | O(n) | 
+ | Búsqueda (Peor Caso) | O(log n) | O(n) |
+ | Inserción (Peor Caso) | O(log n) | O(n) |
+ | Eliminación (Peor Caso) | O(log n) | O(n) |
