@@ -756,3 +756,475 @@
 
 #### Bloque 7 - Modificación de `heapSort`
 
+ `Código Modificado`
+ 
+ 1. `Semana6/include/vector_heapSort.h`
+        Reemplazamos el archivo de cabecera para añadir la sobrecarga solicitada. Usaremos una función lambda interna que ajusta el comparador según el valor del booleano ascending.
+
+  Añadimos a partir de la linea 23 hacia adelante, antes de llegar al template <class T, class Compare = std::less<T>>:
+  
+ ```C++
+ // MOD-A6-B7: Nueva versión parametrizable para elegir sentido (Ascendente / Descendente)
+ template <class T, class Compare>
+ void heapSort(std::vector<T>& a, Compare comp, bool ascending) {
+  if (a.size() < 2) {
+    return;
+  }
+
+  // Si es ascendente, usamos un Max-Heap (comp normal: menor que)
+  // Si es descendente, invertimos el comparador para forzar un Min-Heap
+  auto custom_comp = [comp, ascending](const T& x, const T& y) {
+    if (ascending) {
+      return comp(x, y); // Criterio estándar para Max-Heap
+    }
+    return comp(y, x);   // Criterio invertido para Min-Heap
+  };
+
+  // 1. Fase de Heapify In-Situ usando Floyd
+  for (std::size_t i = a.size() / 2; i-- > 0;) {
+    complHeapPercolateDown(a, a.size(), i, custom_comp);
+  }
+
+  // 2. Fase de Extracción y Ordenamiento
+  for (std::size_t n = a.size(); n > 1; --n) {
+    std::swap(a[0], a[n - 1]); // Desplaza el elemento raíz actual al extremo final
+    complHeapPercolateDown(a, n - 1, 0, custom_comp); // Repara el sub-heap restante
+  }
+ }
+ ```
+
+ `Demostración Actualizada`
+ 
+ 2. `Semana6/demos/demo_heapsort.cpp`
+       Actualizamos el archivo ejecutable para procesar el vector con datos repetidos solicitado por la guía de laboratorio: {5, 1, 5, 3, 8, 2, 8, 0}.
+
+ Añadimos :
+      #include <functional>
+      #include "vector_heapSort.h"
+  
+ Cambiamos esto:
+ ```C++
+ int main() {
+  std::vector<int> a{9, 1, 8, 3, 7, 2, 6, 4, 5};
+  printVector(a, "entrada");
+  ods::heapSort(a);
+  printVector(a, "salida ordenada");
+  std::cout << "heapSort usa un max-heap implicito y deja el arreglo en orden ascendente.\n";
+ }
+ ```
+ Por esto:
+ ```C++
+ int main() {
+  std::cout << " MOD-A6-B7: DEMO HEAPSORT CON SENTIDO CONFIGURABLE \n\n";
+
+  // Vector de prueba con elementos repetidos (dos 5 y dos 8)
+  const std::vector<int> entrada = {5, 1, 5, 3, 8, 2, 8, 0};
+  auto comp = std::less<int>();
+
+  printVector(entrada, "Arreglo Entrada             ");
+  std::cout << "---------------------------------------------------------\n";
+
+  // Prueba 1: Orden Ascendente (ascending = true)
+  std::vector<int> v_asc = entrada;
+  ods::heapSort(v_asc, comp, true);
+  printVector(v_asc,   "Resultado Ascendente (true) ");
+
+  // Prueba 2: Orden Descendente (ascending = false)
+  std::vector<int> v_desc = entrada;
+  ods::heapSort(v_desc, comp, false);
+  printVector(v_desc,  "Resultado Descendente (false)");
+  std::cout << "---------------------------------------------------------\n";
+
+  std::cout << "Evidencia de repetidos: Los valores [5, 5] y [8, 8] se agrupan correctamente.\n";
+  return 0;
+ }
+ ```
+
+ `Evidencia de Salida en la Terminal`
+
+        MOD-A6-B7: DEMO HEAPSORT CON SENTIDO CONFIGURABLE 
+
+        Arreglo Entrada             : [5, 1, 5, 3, 8, 2, 8, 0]
+        ---------------------------------------------------------
+        Resultado Ascendente (true) : [0, 1, 2, 3, 5, 5, 8, 8]
+        Resultado Descendente (false): [8, 8, 5, 5, 3, 2, 1, 0]
+        ---------------------------------------------------------
+        Evidencia de repetidos: Los valores [5, 5] y [8, 8] se agrupan correctamente.
+
+1. ¿Por qué heapsort puede ordenar in situ?
+
+ Porque reutiliza el espacio físico del propio arreglo de entrada. Intercambia el elemento de la raíz (el máximo o mínimo actual) con la última posición lógica del sub-heap. Al reducir el tamaño del heap en uno, esa celda final queda congelada fuera de la estructura, sirviendo como celda de almacenamiento para la secuencia ordenada.
+
+2. ¿Qué parte del algoritmo destruye gradualmente el heap?
+
+ El bucle de extracción/intercambio (**for (std::size_t n = a.size(); n > 1; --n)**). Cada iteración toma la raíz válida, la manda al fondo del vector mediante un **std::swap** y reduce el tamaño logico del heap activo, desarmando la jerarquía del árbol para armar el arreglo plano.
+
+3. ¿Por qué heapsort cuesta `O(n log n)`?
+
+  Porque la fase de extracción ejecuta exactamente n-1 llamadas a **percolateDown**. Como la distancia máxima que recorre un elemento al bajar está limitada por la altura de un árbol binario balanceado, cada llamada cuesta O(log n). Al multiplicar las iteraciones por el costo de bajada, obtenemos una complejidad temporal estricta de O(nlog n) tanto para el mejor como para el peor de los casos.
+  
+4. ¿Es heapsort estable? Justifica con un ejemplo.
+
+ Justifica con un ejemplo. No, es inestable. Los intercambios de larga distancia que ocurren al mandar elementos a la raíz o al fondo destruyen el orden relativo original de los valores idénticos. Por ejemplo, en el vector con elementos repetidos dados **{5a, 1, 5b, 3}**, la fase de heapify puede empujar a **5a** a los niveles inferiores del árbol mientras que **5b** sube, haciendo que terminen en posiciones invertidas (**5b** antes que **5a**) al consolidar el arreglo ordenado.
+
+5. ¿Qué diferencia hay entre usar `heapSort` y extraer todos los elementos con `delMax`?
+ 
+ La diferencia radica en el uso de memoria (complejidad espacial). **heapSort** trabaja in-situ modificando el mismo vector original con un costo de memoria de O(1). En cambio, vaciar un heap llamando consecutivamente a **delMax** requiere instanciar un contenedor dinámico externo u objeto para ir almacenando las salidas, lo que eleva el costo espacial a O(n).
+
+#### Bloque 8 - Heap izquierdista: validación de `merge`
+
+ `Código de Validación`
+  1. `Semana6/include/PQ_LeftHeap.h`
+       Para verificar los invariantes sin modificar la estructura privada de la clase si no es necesario, podemos añadir la función **isValidLeftHeap()** dentro del archivo **Semana6/include/PQ_LeftHeap.h**.
+
+       Dado que el código de la cátedra suele estructurar los nodos con campos para **left**, **right**, **npl** (o **dist**), y un contador de tamaño n, la validación debe realizar un recorrido recursivo que verifique los 4 puntos exigidos.
+
+ ```C++
+ // Dentro de la clase PQ_LeftHeap en Semana6/include/PQ_LeftHeap.h
+
+ public:
+  // MOD-A6-B8: Método público de validación estructural
+  bool isValidLeftHeap() const {
+    // 1. Verificar consistencia de tamaño global
+    std::size_t counted_size = 0;
+    if (!validateSubtree(root_, counted_size)) {
+      return false;
+    }
+    return counted_size == this->size();
+  }
+
+private:
+  // Estructura o representación típica de Node (ajustar nombres según tu archivo si varía)
+  // Supongamos que tu nodo tiene: node->left, node->right, node->npl, node->val
+
+  bool validateSubtree(Node* t, std::size_t& counted_size) const {
+    if (t == nullptr) {
+      return true;
+    }
+
+    counted_size++; // Incremento por el nodo actual
+    
+    // Obtener los npl (Null Path Length) de los hijos
+    std::size_t left_npl = (t->left != nullptr) ? t->left->npl : 0;
+    std::size_t right_npl = (t->right != nullptr) ? t->right->npl : 0;
+
+    // e) Propiedad de Heap (Max-Heap: el padre es mayor o igual que sus hijos)
+    if (t->left != nullptr && comp_(t->val, t->left->val)) {
+      return false; // Hijo izquierdo viola la prioridad
+    }
+    if (t->right != nullptr && comp_(t->val, t->right->val)) {
+      return false; // Hijo derecho viola la prioridad
+    }
+
+    // f) Propiedad Izquierdista: npl(izquierdo) >= npl(derecho)
+    if (left_npl < right_npl) {
+      return false;
+    }
+
+    // g) Consistencia de npl: npl(actual) = npl(derecho) + 1
+    if (t->npl != right_npl + 1) {
+      return false;
+    }
+
+    // Validar recursivamente ambos subárboles
+    std::size_t left_size = 0;
+    std::size_t right_size = 0;
+
+    if (!validateSubtree(t->left, left_size) || !validateSubtree(t->right, right_size)) {
+      return false;
+    }
+
+    counted_size += left_size + right_size;
+    return true;
+  }
+ ```
+
+ `Demostración Modificada`
+
+  2. `Semana6/demos/demo_left_heap_merge.cpp`
+       Reescribimos el archivo de demostración para realizar las operaciones, forzar el uso de la nueva rutina de validación e imprimir el estado de los invariantes en cada paso crucial.
+      
+ Cambiamos esto:
+ ```C++
+ int main() {
+  ods::PQ_LeftHeap<int> a{7, 2, 9};
+  ods::PQ_LeftHeap<int> b{1, 8, 3, 11};
+
+  printVector(a.levelOrder(), "heap A antes del merge");
+  printVector(b.levelOrder(), "heap B antes del merge");
+
+  a.merge(b);
+  printVector(a.levelOrder(), "heap A despues del merge");
+  std::cout << "B queda vacio: " << std::boolalpha << b.empty() << "\n";
+
+  a.insert(10);
+  printVector(a.levelOrder(), "A despues de insert(10)");
+
+  std::cout << "Secuencia de prioridad: ";
+  while (!a.empty()) {
+    std::cout << a.delMax() << ' ';
+  }
+  std::cout << '\n';
+ }
+ ```
+ Por esto:
+ ```C++
+ int main() {
+  std::cout << "MOD-A6-B8: DEMO VALIDACIÓN DE MERGE EN HEAP IZQUIERDISTA \n\n";
+
+  // Inicialización de Heaps de prueba
+  ods::PQ_LeftHeap<int> a{7, 2, 9};
+  ods::PQ_LeftHeap<int> b{1, 8, 3, 11};
+
+  std::cout << "ESTADO INICIAL DE LOS HEAPS\n";
+  printVector(a.levelOrder(), "Heap A (level-order)");
+  std::cout << "¿Heap A es válido?: " << (a.isValidLeftHeap() ? "SÍ" : "NO") << "\n\n";
+
+  printVector(b.levelOrder(), "Heap B (level-order)");
+  std::cout << "¿Heap B es válido?: " << (b.isValidLeftHeap() ? "SÍ" : "NO") << "\n";
+  std::cout << "---------------------------------------------------------\n";
+
+  // Operación Central: Fusión (Merge)
+  std::cout << "\nEjecutando: a.merge(b)...\n\n";
+  a.merge(b);
+
+  std::cout << "ESTADO POST-FUSIÓN\n";
+  printVector(a.levelOrder(), "Heap A fusionado    ");
+  std::cout << "¿Heap A resultante es válido?: " << (a.isValidLeftHeap() ? "SÍ" : "NO") << "\n";
+  std::cout << "Tamaño de Heap A: " << a.size() << "\n";
+  std::cout << "Heap B está vacío: " << (b.empty() ? "SÍ" : "NO") << "\n";
+  std::cout << "---------------------------------------------------------\n";
+
+  // Operación Secundaria: Inserción desestabilizante
+  std::cout << "\nInsertando elemento 10 en Heap A...\n";
+  a.insert(10);
+  printVector(a.levelOrder(), "Heap A post-insert  ");
+  std::cout << "¿Sigue siendo válido?: " << (a.isValidLeftHeap() ? "SÍ" : "NO") << "\n";
+  std::cout << "---------------------------------------------------------\n";
+
+  // Extracción ordenada para vaciar
+  std::cout << "\nSecuencia de extracción por prioridad (delMax):\n";
+  while (!a.empty()) {
+    std::cout << a.delMax() << " ";
+  }
+  std::cout << "\n\nFIN DE LA DEMOSTRACIÓN \n";
+
+  return 0;
+ }
+ ```
+3. `Trazado de una Fusión Pequeña`
+    Imaginemos la fusión de dos raíces simples de Max-Heaps izquierdistas:
+       - Heap Hsub1: raíz [9], con hijos vacíos. Su npl = 1.
+       - Heap Hsub2: raíz [7], con hijos vacíos. Su npl = 1.
+
+ Paso 1: Comparación de Raíces
+   
+   El algoritmo compara los valores de las raíces. Como 9 > 7, la raíz definitiva de la fusión será 9. El subárbol izquierdo de 9 permanece intacto. El subárbol derecho de 9 se convertirá en el resultado de fusionar recursivamente el antiguo hijo derecho de 9 (que es nullptr) con el Heap Hsub2 entero ([7]).
+
+ Paso 2: Caso Base de la Recursión
+
+   Se invoca merge(nullptr, [7]). Al alcanzar el caso base donde uno de los lados es nulo, se retorna inmediatamente el nodo no nulo, es decir, el subárbol [7].
+
+ Paso 3: Enlace Provisorio
+   
+  El subárbol retornado se cuelga a la derecha del nodo dominante.
+  - Estructura transitoria de la raíz 9:
+      - Hijo izquierdo: nullptr (npl = 0)
+      - Hijo derecho: [7] (npl = 1)
+
+ Paso 4: Reparación del Invariante Izquierdistat
+
+   Al regresar de la recursión, el algoritmo verifica los caminos nulos de los hijos de 9:
+
+         npl(left) = 0 < npl(right) = 1
+
+   Como se viola la propiedad izquierdista (npl(left)=>npl(right)), se intercambian los hijos izquierdo y derecho
+
+   - Estructura corregida de la raíz 9:
+       - Hijo izquierdo: [7] (npl = 1)
+       - Hijo derecho: nullptr (npl = 0)
+
+ Paso 5: Recálculo de la Distancia Nula
+   Se actualiza el valor del nodo actual:
+
+       npl(9) = npl(right) + 1 = 0 + 1 = 1
+
+El árbol resultante queda balanceado a la izquierda, es un heap válido y se da por concluida la operación.
+
+1. ¿Por qué `merge` es la operación central del heap izquierdista?
+
+ Porque todas las demás operaciones de modificación estructural (insert y delMax) se reducen a llamadas directas de esta única función. Centralizar la lógica en merge simplifica el mantenimiento del código y asegura que los invariantes estructurales y de orden se reparen bajo un único bloque algorítmico común.
+
+2. ¿Cómo se implementa `insert` usando `merge`?
+
+ Se toma el elemento que se desea ingresar y se empaqueta de forma independiente en un nuevo nodo raíz aislado de tamaño 1 (un heap izquierdista trivial). Luego, se invoca la función fusionando el heap original con este nuevo heap unitario: this->root = merge(this->root, nuevo_nodo).
+
+3. ¿Cómo se implementa `delMax` usando `merge`?
+
+ Se guarda el valor almacenado en la raíz para ser retornado, se desconectan los punteros que apuntan a sus dos subárboles hijos (izquierdo y derecho) y finalmente se realiza una fusión directa entre ambos subárboles: this->root = merge(root->left, root->right). El nodo de la raíz vieja se libera de la memoria.
+
+4. ¿Qué propiedad adicional diferencia un heap izquierdista de un heap binario completo?
+
+ El heap binario completo se define por un invariante de forma geométrica estricta (debe llenarse por niveles de izquierda a derecha de manera compacta). En cambio, el heap izquierdista es asimétrico por diseño y se rige por la propiedad del camino nulo: para cada nodo, la distancia al descendiente nulo más cercano por la rama izquierda siempre debe ser mayor o igual que por la derecha.
+
+5. ¿Qué ventaja conceptual tiene un heap izquierdista frente a un heap binario completo?.
+
+ Su gran ventaja radica en la eficiencia de la operación de fusión (merge). En un heap binario completo implementado sobre un arreglo, fusionar dos colecciones requiere copiar los datos en un nuevo vector y aplicar heapify, costando un tiempo lineal O(n). El heap izquierdista mezcla sus ramas de manera puramente lógica modificando punteros a lo largo del camino más corto (el derecho), logrando fusionarse en un tiempo logarítmico O(log n).
+
+#### Bloque 9 - Huffman: modificación de desempate y caso de un símbolo
+ 
+ `Código Modificado`
+
+ 1. `Semana6/include/Huffman_PQ.h`
+  
+  Añadimos a partir de la linea 54 antes de llegar al: inline std::string huffmanNodeLabel(const std::shared_ptr<HuffmanNode>& u) {
+
+ ```C++
+ // Criterio de prioridad: Menor frecuencia primero. A igual frecuencia, desempate alfabético inverso.
+ struct HuffmanLowerFrequencyFirst {
+  bool operator()(const std::shared_ptr<HuffmanNode>& a,
+                  const std::shared_ptr<HuffmanNode>& b) const {
+    if (a->frequency != b->frequency) {
+      return a->frequency > b->frequency; // Invierte para que el Heap devuelva el menor primero
+    }
+    return a->symbol > b->symbol; // Desempate alfabético determinista
+  }
+ };
+ ``` 
+  y cambiamos esto:
+ 
+ ``` C++
+ inline std::string huffmanDecode(const std::string& bits,
+                                 const std::shared_ptr<HuffmanNode>& root) {
+ if (!root) return {};
+ if (root->leaf()) {
+   return std::string(bits.size(), root->symbol);
+ }
+ ```
+ Por esto:
+ ```C++
+ // MOD-A6-B9: Corrección de seguridad para decodificación de raíz-hoja única
+ inline std::string huffmanDecode(const std::string& bits,
+                                 const std::shared_ptr<HuffmanNode>& root) {
+  if (!root) return {};
+  
+  // Si el árbol consiste únicamente de un símbolo raíz (caso extremo)
+  if (root->leaf()) {
+    std::string out;
+    for (char bit : bits) {
+      if (bit != '0') {
+        throw std::invalid_argument("Secuencia Huffman invalida para simbolo unico");
+      }
+      out.push_back(root->symbol);
+    }
+    return out;
+   } 
+   ```
+ 
+  `Demostración Actualizada`
+
+  2. `Semana6/demos/demo_huffman.cpp`
+       Modificamos el archivo principal de pruebas para inyectar los dos casos solicitados
+
+   Añadiremos:
+     - #include <iomanip>
+   Y cambiaremos el #include "Capitulo6.h" por :  
+     - #include "Huffman_PQ.h"
+    
+  Agregamos:
+
+  - En lugar de tener la lógica de impresión cableada directamente para un solo alfabeto en el main, encapsulé todo el bloque en la función:
+ ```C++
+ void runTestOnAlphabet(const std::vector<ods::HuffmanSymbol>& alphabet, const std::str
+ ```
+  - Líneas añidadas debajo de la tabla:
+ ```C++
+ int wpl = ods::huffmanWeightedPathLength(alphabet, codes);
+ std::cout << "Longitud del Camino Ponderado (WPL): " << wpl << " bits\n";
+ ```
+ - Como el nuevo alfabeto de prueba no tiene la letra 'f' ni 'c', la codificación original habría lanzado un std::invalid_argument de inmediato.Lo reemplacé por un selector adaptativo:
+ ```C++
+ std::string test_msg;
+ if (alphabet.size() == 1) {
+  test_msg = "XXXXX"; // Caso único
+ } else {
+  test_msg = "ABCDE"; // Caso de desempate
+ }
+ ```
+ El bloque main original contenía el alfabeto de letras de la 'a' a la 'f'. Lo reemplaze por completo para invocar las dos baterías de prueba obligatorias:
+ ```C++
+ int main() {
+  // Caso 1: Alfabeto con empates múltiples de frecuencia
+  std::vector<ods::HuffmanSymbol> alfabetoDesempate = {
+    {'A', 5}, {'B', 5}, {'C', 10}, {'D', 10}, {'E', 20}
+  };
+  runTestOnAlphabet(alfabetoDesempate, "{A:5, B:5, C:10, D:10, E:20}");
+
+  // Caso 2: Caso extremo - Símbolo único
+  std::vector<ods::HuffmanSymbol> alfabetoUnico = {
+    {'X', 100}
+  };
+  runTestOnAlphabet(alfabetoUnico, "{X:100} (Caso Extremo)");
+
+  return 0;
+ }
+ ```
+ `Tablas de Resultados Obtenidos en Consola`
+  
+  Caso 1: Alfabeto con Empates Múltiples
+ 
+           Símbolo   Frecuencia   Código      Longitud (bits)
+           ---------------------------------------------------------
+            A         5            110         3
+            B         5            111         3
+            C         10           10          2
+            D         10           00          2
+            E         20           01          2
+           ---------------------------------------------------------
+           Longitud del Camino Ponderado (WPL): 110 bits
+           ¿Es libre de prefijos?             : SÍ
+           Mensaje de prueba  : ABCDE
+           Bits codificados   : 110111100001
+           Texto decodificado : ABCDE
+  
+  Caso 2: Caso Extremo 
+
+           Símbolo   Frecuencia   Código      Longitud (bits)
+           ---------------------------------------------------------
+           X         100          0           1
+           ---------------------------------------------------------
+           Longitud del Camino Ponderado (WPL): 100 bits
+           ¿Es libre de prefijos?             : SÍ
+           Mensaje de prueba  : XXXXX
+           Bits codificados   : 00000
+           Texto decodificado : XXXXX
+
+1. ¿Por qué Huffman necesita una cola de prioridad?
+
+ Porque el algoritmo es de naturaleza ávida (greedy) y requiere extraer de forma sistemática y eficiente los dos elementos con menor peso o frecuencia global en cada paso constructivo. Una cola de prioridad proporciona acceso inmediato al mínimo absoluto en tiempo O(1) y repara su estructura tras mutaciones en tiempo O(log n).
+
+2. ¿Qué elementos se extraen repetidamente?
+
+ Se extraen de forma repetida los nodos raíces del bosque provisional, los cuales pueden representar tanto símbolos individuales de las hojas iniciales como subárboles intermedios que ya fueron fusionados en pasos previos.
+
+3. ¿Qué nodo se vuelve a insertar?
+
+ Se vuelve a insertar un nuevo nodo interno compuesto (padre), cuya frecuencia es igual a la suma exacta de las frecuencias de los dos nodos hijos eliminados (a->frequency + b->frequency), actuando como la raíz que unifica ambos subárboles.
+
+4. ¿Por qué el caso de un solo símbolo requiere cuidado especial?
+
+ Porque rompe el comportamiento estándar del algoritmo: no se produce ninguna fusión. Al haber un único nodo en el bosque, el bucle de combinación no se activa y la raíz resultante carece de ramas izquierda (0) o derecha (1). Si no se maneja de forma especial, la longitud del código sería vacía "", lo cual imposibilita la lectura de bits o genera bucles infinitos en el descifrador al no consumir caracteres de la terminal.
+
+5. ¿Qué significa que el conjunto de códigos sea libre de prefijos?
+
+ Significa que ningún código binario asignado a un carácter es el inicio (prefijo) de otro código perteneciente al mismo alfabeto. Esta propiedad fundamental permite que el texto codificado sea unívocamente decodificable en tiempo real de izquierda a derecha sin necesidad de usar separadores entre letras.
+
+6. ¿Cómo afecta el desempate a la forma del árbol?
+
+ El desempate define de qué lado del subárbol se ubicarán los elementos idénticos y en qué orden secuencial serán agrupados en los niveles profundos. Un cambio en la regla de desempate altera la asignación exacta de 0s y 1s a los caracteres, produciendo un árbol con una topología estructural de espejo o con variaciones de profundidad locales entre nodos del mismo nivel.
+
+7. ¿El desempate cambia necesariamente la longitud total ponderada? Justifica.
+ 
+ No, nunca la cambia. El costo del camino ponderado (WPL) es un óptimo matemático invariante para una distribución de frecuencias dada. Aunque el desempate redistribuya qué letra idéntica toma una rama u otra alterando sus códigos individuales individuales (por ejemplo, si A toma 110 y B toma 111 o viceversa), las longitudes de los caminos hacia esos niveles no varían, por lo que la suma global ponderada permanece fija.
+
+ 
