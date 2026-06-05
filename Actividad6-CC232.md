@@ -1653,6 +1653,7 @@ El árbol resultante queda balanceado a la izquierda, es un heap válido y se da
 5. ¿Qué estructura usarías para extraer máximos repetidamente?
 
  Usaría PQ_ComplHeap, porque procesa delMax en O(log n) de forma nativa sin sobrecarga de punteros en memoria y localiza el máximo instantáneamente en O(1) en la posición data_[0].
+
 6. ¿Qué estructura usarías para responder `lowerBound` o `upperBound`?
 
  Usaría BinarySearchTree (o en su defecto un Treap). Es la única que gracias a su propiedad binaria permite descartar subárboles completos, resolviendo la consulta en tiempo proporcional a su altura. En un heap, obligatoriamente se requiere un escaneo lineal costoso de costo O(n).
@@ -1665,4 +1666,136 @@ El árbol resultante queda balanceado a la izquierda, es un heap válido y se da
    - Si el problema se enfoca en Frecuencias / Atender prioridades / Algoritmos de Codificación (como Huffman)-> Se usa PQ_ComplHeap (alto rendimiento en extremos, memoria compacta).
    - Si el problema se enfoca en Consultas de rangos / Diccionarios / Búsquedas de límites cercanos (Bounds)-> Se usa Treap o BST (navegación horizontal indexada).
 
+#### Bloque 12 - Pruebas obligatorias después de modificar código
+
+ `Modificaciones a los Archivos de Prueba`
+   1. `Cambios en Semana6/pruebas_internas/test_internal_week6.cpp`
+       A la función existente runComprehensiveHeapTests(), le integré la suite correspondiente a las operaciones detalladas de tamaño e invariantes de Heap y Huffman:
+ ```C++
+ // Se agregaron estas validaciones al final de runComprehensiveHeapTests() o como función hermana:
+ void runAdditionalInternalTests() {
+  auto comp = std::less<int>();
+
+  // Prueba 3: getMax no cambia el tamaño
+  std::vector<int> raw = {5, 12, 9, 1};
+  ods::PQ_ComplHeap<int> heap_size(raw);
+  std::size_t size_before = heap_size.size();
+  int max_val = heap_size.getMax();
+  assert(heap_size.size() == size_before); // El tamaño se mantiene idéntico
+
+  // Prueba 4: delMax sí cambia el tamaño
+  heap_size.delMax();
+  assert(heap_size.size() == size_before - 1); // Se reduce exactamente en 1
+
+  // Prueba 10 y 11: Símbolos con frecuencia positiva y libres de prefijo
+  const std::vector<ods::HuffmanSymbol> symbols = {{'x', 10}, {'y', 20}, {'z', 30}};
+  const auto huff_codes = ods::huffmanGenerateCodes(symbols);
+  assert(huff_codes.size() == 3); // Todos los caracteres obtienen un código
+  assert(ods::huffmanIsPrefixFree(huff_codes));
+
+  // Prueba 12: Caso extremo de un único símbolo en Huffman
+  const std::vector<ods::HuffmanSymbol> single_sym = {{'a', 100}};
+  const auto single_codes = ods::huffmanGenerateCodes(single_sym);
+  assert(single_codes.size() == 1);
+  assert(!single_codes.at('a').empty()); 
+ }
+ ```
    
+   2. `Cambios en Semana6/pruebas_publicas/test_public_week6.cpp`
+        Reescribí las secciones de Leftist Heap y Treap para asegurar la verificación de mutaciones consecutivas paso a paso:
+ ```C++
+ // Inyecciones dentro del main() de pruebas públicas:
+
+ // Pruebas 7, 8 y 9: Invariantes secuenciales en Leftist Heaps
+ ods::PQ_LeftHeap<int> lh1{10, 20};
+ ods::PQ_LeftHeap<int> lh2{5, 15};
+
+ lh1.merge(lh2); 
+ assert(lh1.isLeftistHeap()); // Invariante post-merge
+
+ lh1.insert(25);
+ assert(lh1.isLeftistHeap()); // Invariante post-insert
+
+ lh1.delMax();
+ assert(lh1.isLeftistHeap()); // Invariante post-delMax
+
+ // Prueba 6: HeapSort con elementos repetidos
+ std::vector<int> repetidos = {4, 2, 4, 1, 2, 4, 3};
+ ods::heapSort(repetidos);
+ assert((repetidos == std::vector<int>{1, 2, 2, 3, 4, 4, 4})); // Orden relativo correcto
+
+ // Pruebas 13, 14 y 15: Invariantes compuestos del Treap
+ ods::Treap<int> t_test(42);
+ std::vector<int> claves = {50, 30, 70, 20, 40};
+ for(int k : claves) {
+  t_test.add(k);
+  assert(t_test.isBST());           // Propiedad 13: Conserva orden de búsqueda
+  assert(t_test.isHeapByPriority());// Propiedad 14: Conserva propiedad de prioridad
+ }
+ t_test.remove(30);
+ assert(t_test.isTreap());           // Propiedad 15: Mantiene ambas tras remoción
+ 
+ ```
+ `Lista de Pruebas Agregadas y Cobertura`
+
+ A continuación detallare la matriz de correspondencia de cada una de las 15 pruebas solicitadas:
+  
+   1. PQ_ComplHeap conserva propiedad en inserción: Integrado en el bucle incremental de test_internal_week6.cpp utilizando assert(pq.isHeap()). 
+   2. PQ_ComplHeap conserva propiedad en eliminación: Validado en el bucle de vaciado de pq.delMax() mediante assert(pq.empty() || pq.isHeap()).
+   3. getMax no altera el tamaño: Implementado comparando .size() antes y después de leer el extremo máximo.
+   4. delMax decrementa el tamaño: Validado mediante una aserción que comprueba que size_after == size_before - 1.
+   5. heapifyFloyd produce un heap válido: Comprobado al instanciar pq_floyd(raw_vector) y ejecutar de inmediato assert(pq_floyd.isHeap()).
+   6. heapSort con repetidos: Validado pasando un vector con múltiples instancias de {4, 2, 4} a ods::heapSort.
+   7. PQ_LeftHeap post-merge: Verificado llamando a .isLeftistHeap() justo después de mezclar dos colas.
+   8. PQ_LeftHeap post-insert: Validado llamando a .isLeftistHeap() tras añadir elementos individuales.
+   9. PQ_LeftHeap post-delMax: Verificado llamando a .isLeftistHeap() inmediatamente después de extraer la raíz.
+   10. Huffman con frecuencia positiva: Comprobado verificando que la longitud del mapa de códigos generados coincide exactamente con el conteo de símbolos provistos.
+   11. Huffman libre de prefijos: Validado a través de la función predictiva ods::huffmanIsPrefixFree(...).
+   12. Huffman con un único símbolo: Manejo del caso base crítico donde el árbol posee un único nodo hoja (raíz).
+   13. Treap conserva propiedad BST al insertar: Verificado llamando de forma explícita a t.isBST().
+   14. Treap conserva propiedad Heap al insertar: Verificado llamando de forma explícita a t.isHeapByPriority().
+   15. Treap conserva ambas propiedades al eliminar: Validado llamando a la conjunción lógica t.isTreap() tras remover nodos intermedios y raíces.
+
+ `Explicación de Bugs Atrapados por cada Prueba`
+   - Pruebas 1 y 2 (Invariantes de inserción/remoción en Heap): Atrapan errores en los índices de cálculo de los nodos hijos/padres en bubbleUp o trickleDown. Si el código calcula mal el padre usando una fórmula errónea, la propiedad se rompe de inmediato.
+   - Pruebas 3 y 4 (Efectos de tamaño en lectura y borrado): Atrapan el clásico error de "efecto secundario", donde un método de consulta (como getMax) borra accidentalmente el nodo o muta un puntero, o donde delMax se olvida de actualizar el contador de elementos.
+   - Prueba 5 (heapifyFloyd): Atrapa bugs de rango en el bucle decreciente. El algoritmo de Floyd debe empezar en n/2 - 1 e ir bajando; si empieza en un índice incorrecto o usa un signo equivocado, ignora la mitad de los subárboles.
+   - Prueba 6 (heapSort con repetidos): Detecta fallas en los operadores de comparación estricta (< vs <=). Si el ordenamiento no procesa correctamente los duplicados, puede entrar en un bucle infinito o truncar el arreglo.
+   - Pruebas 7, 8 y 9 (Invariantes en Leftist Heap): Detectan fallas en la actualización del parámetro npl (null path length). Si al fusionar o eliminar nos olvidamos de recalcular el npl del nodo padre o no intercambiamos los hijos izquierdo y derecho cuando el derecho es mayor, el árbol pierde la propiedad izquierdista y se degrada en rendimiento.
+   - Pruebas 10, 11 y 12 (Defectos en Huffman): Evitan la generación de árboles degenerados. El caso de un solo símbolo suele causar caídas por desreferenciación de punteros nulos (nullptr) si el algoritmo asume que siempre hay al menos dos nodos para realizar la combinación.
+   - Pruebas 13, 14 y 15 (Invariantes del Treap): Son cruciales para detectar errores en las rotaciones de punteros. Si rotateLeft o rotateRight enlaza de forma incorrecta el padre de un subárbol modificado, estas pruebas fallarán inmediatamente indicando que perdimos la secuencia ordenada del BST o la prioridad del Heap.
+
+  `Resultado (ctest --output-on-failure)`
+
+         Test project /home/gustavo/CC-232-main/Libreria_cc232/Semana6/build
+             Start 1: TestPublicWeek6
+         1/2 Test #1: TestPublicWeek6 ..................   Passed    0.00 sec
+             Start 2: TestInternalWeek6
+         2/2 Test #2: TestInternalWeek6 ................   Passed    0.01 sec
+
+         100% tests passed, 0 tests failed out of 2
+
+         Total Test time (real) =   0.02 sec
+
+#### Bloque 13 - Defensa escrita de modificaciones
+
+ - Modificar directamente el código de las estructuras de datos de la Unidad 3 me ha revelado una verdad fundamental: leer un algoritmo oculta los problemas de punteros, índices y flujos de datos que ocurren en la memoria real. La simulación mental o la simple lectura de un pseudocódigo ignora los sutiles detalles de implementación donde se esconden los verdaderos bugs arquitectónicos.
+      1. Gestión de Prioridades y Representaciones en Memoria
+          - La interfaz PQ: Al extender la interfaz de Colas de Prioridad, aprendí que una PQ es un contrato puramente funcional orientado al comportamiento externo (qué extremo se extrae). Su diseño abstracto desacopla por completo al cliente de la topología interna; al usuario no le importa si por debajo opera un arreglo contiguo o un árbol de nodos dinámicos enlazados, facilitando el intercambio de componentes en caliente.
+          - Representación implícita del heap binario completo: Implementar las relaciones de vecindad mediante aritmética pura —donde los hijos de i están en 2i+1 y 2i+2— me demostró el poder de eliminar la sobrecarga de memoria de los punteros tradicionales. Sin embargo, también evidenció su fragilidad: el más mínimo desfase de una unidad en el mapeo indexado destruye por completo la estructura lógica del árbol, transformando un algoritmo óptimo en un fallo de segmentación.
+
+      2. Algoritmos de Ajuste y Construcción Estructural
+          - percolateUp (o bubbleUp): Escribir este método me enseñó que la propagación hacia arriba es un proceso estrictamente local y unidireccional. El nodo ascendente solo compite contra su ancestro directo directo en cada iteración, lo que simplifica las condiciones de parada, deteniéndose inmediatamente cuando el padre recupera la dominancia de prioridad.
+          - percolateDown (o trickleDown): Modificar este flujo me demostró que el descenso es sustancialmente más complejo que la subida. Aquí, el nodo modificado debe evaluar simultáneamente a sus dos hijos antes de decidir el intercambio; seleccionar erróneamente el hijo con menor prioridad rompe el invariante del heap en el subárbol opuesto, lo que exige una lógica condicional rigurosa en cada paso de bajada.
+          - heapify de Floyd: Al programar la construcción de Floyd, asimilé la genialidad de construir un heap "de abajo hacia arriba" procesando desde el último nodo interno (n/2 - 1) hasta la raíz. Modificar este bucle decreciente me permitió contrastar su eficiencia matemática real, logrando un tiempo lineal O(n) que es imposible de emular mediante inserciones sucesivas de costo O(n log n).
+          - heapSort: Al acoplar el ordenamiento in-place, aprendí que heapSort aprovecha de forma magistral las dos fases del heap: la construcción rápida con Floyd y el vaciado sistemático. Al intercambiar la raíz máxima con la última posición del arreglo y reducir el tamaño lógico del heap, la estructura utiliza el mismo espacio físico para ordenar los elementos sin requerir memoria auxiliar.
+
+      3. Variaciones Avanzadas: Leftist Heaps y Codificación
+          - merge en heap izquierdista: La codificación de la fusión en PQ_LeftHeap me obligó a pensar en términos de asimetría controlada. Aprendí que, a diferencia del heap completo, aquí los punteros físicos importan. Mantener el camino derecho lo más corto posible exige que, tras cada fusión recursiva, se evalúe el Null Path Length (npl) de los hijos y se realice un intercambio físico si el derecho supera al izquierdo, garantizando que el camino de descenso derecho nunca exceda O(log n).
+          - Algoritmo de Huffman: Implementar la generación de códigos me enseñó la interdependencia entre las colas de prioridad y los árboles de decisión. La cola de prioridad no solo actúa como un almacén, sino como el motor codicioso (greedy) que decide la topología del árbol final, donde los caracteres más frecuentes se mantienen cerca de la raíz para minimizar la longitud de la ruta ponderada.
+
+      4. Híbridos y Comparaciones de Diseño
+          - El Treap, rotaciones y búsqueda ordenada: Programar el Treap fue el desafío más revelador de la unidad. Entendí de forma práctica cómo las rotaciones locales modifican la altura y la jerarquía de prioridades (propiedad de heap) sin alterar el orden simétrico horizontal de las claves (propiedad de BST). La aleatoriedad de las prioridades actúa como un escudo probabilístico que balancea el árbol de manera natural frente a secuencias de inserción ordenadas.
+          - Comparación con BinaryHeap y BinarySearchTree: Modificar simultáneamente estas estructuras me dio una perspectiva clara de sus ventajas y desventajas en producción. Mientras que BinaryHeap ofrece el máximo rendimiento espacial y accesos en O(1) a un extremo específico, carece por completo de la capacidad de realizar búsquedas eficientes de rangos intermedios (lowerBound), una operación nativa y fluida para el BinarySearchTree y el Treap.
+      
+  
