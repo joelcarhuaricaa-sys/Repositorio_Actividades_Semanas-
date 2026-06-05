@@ -343,4 +343,175 @@
 
 #### Bloque 4 - Modificación de `percolateDown`: elección del hijo dominante
 
- `Código Modificado e Instrumentado
+ `Código Modificado e Instrumentado`
+
+ 1. Semana6/include/PQ_ComplHeap_percolateDown.h
+     
+     añadiremos salidas claras a flujo (std::cout) que describan paso a paso dicha toma de decisiones en tiempo de ejecución.
+
+ ```C++
+ // MOD-A6-B4: Versión instrumentada de percolateDown con traza de hijo elegido
+ template <class T, class Compare>
+ std::size_t complHeapPercolateDownCount(std::vector<T>& a, std::size_t n, std::size_t i, Compare comp) {
+  std::size_t swaps = 0;
+  while (pqIsInternal(i, n)) {
+    std::size_t c = pqLeftChild(i);
+    const std::size_t r = pqRightChild(i);
+    
+    // Elige el hijo dominante (el que tenga mayor prioridad según el comparador)
+    if (pqHasRightChild(i, n)) {
+      if (comp(a[c], a[r])) {
+        c = r;
+        std::cout << "   [Decisión] Nodo " << i << " tiene dos hijos. Elige hijo derecho dominante: " << a[r] << "\n";
+      } else {
+        std::cout << "   [Decisión] Nodo " << i << " tiene dos hijos. Elige hijo izquierdo dominante: " << a[c] << "\n";
+      }
+    } else {
+      std::cout << "   [Decisión] Nodo " << i << " solo tiene hijo izquierdo: " << a[c] << "\n";
+    }
+    
+    // Si el nodo actual ya es superior o igual en prioridad al dominante, paramos
+    if (!comp(a[i], a[c])) {
+      std::cout << "   [Parada] Padre " << a[i] << " es mayor o igual que su hijo dominante " << a[c] << ".\n";
+      break;
+    }
+    
+    std::cout << "   [Swap] Intercambiando padre " << a[i] << " con hijo dominante " << a[c] << "\n";
+    std::swap(a[i], a[c]);
+    swaps++;
+    i = c; // Baja al nivel del hijo dominado
+  }
+  return swaps;
+ }
+
+ }  // namespace ods 
+ ```
+
+ 2. Semana6/demos/demo_pq_complheap_basico.cpp
+
+       Reescribimos la función main de este archivo para transformarlo en la demostración pequeña solicitada, encargada de realizar las extracciones continuas del máximo.
+
+ ```C++
+ }  // namespace
+
+ int main() {
+  std::cout << "=== MOD-A6-B4: DEMO ELIMINACIÓN CONTINUADA (delMax) ===\n\n";
+
+  // Inicializamos el vector con un Max-Heap perfectamente válido de 8 elementos
+  std::vector<int> heap = {90, 70, 80, 60, 30, 20, 40, 10};
+  auto comp = std::less<int>();
+
+  printVector(heap, "Estado inicial del Heap");
+  std::cout << "\n";
+
+  while (!heap.empty()) {
+    int max_eliminado = heap.front();
+    std::cout << "-------------------------------------------------------\n";
+    std::cout << "Máximo eliminado: " << max_eliminado << "\n";
+
+    if (heap.size() == 1) {
+      heap.pop_back();
+      std::cout << "Arreglo antes de reparar: []\n";
+      std::cout << "Número de intercambios: 0\n";
+      std::cout << "Arreglo después de reparar: []\n";
+      continue;
+    }
+
+    // Trasladar el último elemento a la raíz provisoria y remover la celda excedente
+    int ultimo = heap.back();
+    heap.pop_back();
+    heap.front() = ultimo;
+
+    printVector(heap, "Arreglo antes de reparar");
+    
+    // Ejecutar percolateDown instrumentado desde la raíz (índice 0)
+    std::size_t swaps = ods::complHeapPercolateDownCount(heap, heap.size(), 0, comp);
+    
+    std::cout << "Número de intercambios: " << swaps << "\n";
+    printVector(heap, "Arreglo después de reparar");
+  }
+  std::cout << "-------------------------------------------------------\n";
+  return 0;
+ } 
+ ```
+ `Salida de la Demostración`
+
+          === MOD-A6-B4: DEMO ELIMINACIÓN CONTINUADA (delMax) ===
+
+         Estado inicial del Heap: [90, 70, 80, 60, 30, 20, 40, 10]
+
+         -------------------------------------------------------
+         Máximo eliminado: 90
+         Arreglo antes de reparar: [10, 70, 80, 60, 30, 20, 40]
+         [Decisión] Nodo 0 tiene dos hijos. Elige hijo derecho dominante: 80
+         [Swap] Intercambiando padre 10 con hijo dominante 80
+         [Decisión] Nodo 2 tiene dos hijos. Elige hijo derecho dominante: 40
+         [Swap] Intercambiando padre 10 con hijo dominante 40
+         Número de intercambios: 2
+         Arreglo después de reparar: [80, 70, 40, 60, 30, 20, 10]
+         -------------------------------------------------------
+         Máximo eliminado: 80
+         Arreglo antes de reparar: [10, 70, 40, 60, 30, 20]
+         [Decisión] Nodo 0 tiene dos hijos. Elige hijo izquierdo dominante: 70
+         [Swap] Intercambiando padre 10 con hijo dominante 70
+         [Decisión] Nodo 1 tiene dos hijos. Elige hijo izquierdo dominante: 60
+         [Swap] Intercambiando padre 10 con hijo dominante 60
+         Número de intercambios: 2
+         Arreglo después de reparar: [70, 60, 40, 10, 30, 20]
+         -------------------------------------------------------
+         Máximo eliminado: 70
+         Arreglo antes de reparar: [20, 60, 40, 10, 30]
+         [Decisión] Nodo 0 tiene dos hijos. Elige hijo izquierdo dominante: 60
+         [Swap] Intercambiando padre 20 con hijo dominante 60
+         [Decisión] Nodo 1 tiene dos hijos. Elige hijo izquierdo dominante: 10
+         [Parada] Padre 20 es mayor o igual que su hijo dominante 10.
+         Número de intercambios: 1
+         Arreglo después de reparar: [60, 20, 40, 10, 30]
+         ... (continúa hasta vaciar el heap)
+
+ `Trazado Manual de una Eliminación`
+
+ - Analicemos la primera extracción (delMax() -> 90) paso a paso sobre los índices del arreglo:
+
+      1. Estado Inicial Físico: [90, 70, 80, 60, 30, 20, 40, 10] (n = 8).
+
+      2. Extracción y Desplazamiento: Extraemos el frente (90) y salvamos el último elemento (10). Hacemos pop_back() reduciendo el tamaño a n = 7. Colocamos el 10 en la raíz (índice 0).
+                Arreglo resultante transitorio: **[10, 70, 80, 60, 30, 20, 40]**.
+
+      3. Filtro hacia abajo (complHeapPercolateDownCount desde i = 0):
+               - Paso 1 (i = 0): Sus hijos están en **left = 1** (valor 70) y **right = 2** (valor **80**).
+                ¿Tiene hijo derecho? Sí (2 < 7).
+                ¿Cuál es el dominante? Como comp(70, 80) es verdadero (un Max-Heap busca el mayor), el hijo derecho es el dominante (c = 2).
+                ¿Se requiere intercambio? Sí, comp(a[0], a[2]) -> 10 < 80. Hacemos std::swap(a[0], a[2]) e incrementamos swaps = 1. El índice pasa a ser i = 2.
+                Estado del arreglo: **[80, 70, 10, 60, 30, 20, 40]**.
+                - Paso 2 ($i = 2$): Sus nuevos hijos están en left = 5 (valor 20) y right = 6 (valor 40).
+                ¿Tiene hijo derecho? Sí (6 < 7).
+                ¿Cuál es el dominante? comp(20, 40) es verdadero, por lo que el hijo derecho vuelve a ser dominante (c = 6).
+                ¿Se requiere intercambio? Sí, comp(a[2], a[6]) -> 10 < 40. Hacemos 
+                std::swap(a[2], a[6]) e incrementamos **swaps = 2**. El índice pasa a ser **i = 6**.Estado del arreglo: **[80, 70, 40, 60, 30, 20, 10]**.
+                - Paso 3 ($i = 6$): Calculamos **pqIsInternal(6, 7)**. El hijo izquierdo teórico estaría en **2 * 6 + 1 = 13**. Como **13 >= 7**, la función determina correctamente que es una hoja. El bucle finaliza.
+
+      4. Retorno: Devuelve **swaps = 2**. El invariante estructural y de orden ha sido reparado con éxito.
+
+1. ¿Por qué después de `delMax` se mueve el último elemento a la raíz?
+ 
+ Porque es la única forma de garantizar de manera inmediata el Invariante de Estructura de un heap completo (un árbol binario denso lleno nivel por nivel de izquierda a derecha). Eliminar directamente la raíz dejaría un vacío imposible de indexar de forma contigua, mientras que remover el último elemento del vector (**pop_back()**) achica el tamaño físico del árbol de forma limpia y sin dejar huecos.
+
+2. ¿Por qué la reparación baja y no sube?
+  
+ Porque el elemento que acabamos de colocar en la raíz proviene del extremo inferior (hoja), por lo que suele tener un valor de prioridad muy bajo. Como está rodeado en el primer nivel por los elementos que eran los máximos locales de los subárboles izquierdo y derecho, su tendencia natural es ser empujado hacia abajo (percolate down) hasta encontrar su nivel de estabilidad.
+
+3. ¿Cómo se decide entre hijo izquierdo e hijo derecho?
+ 
+ Se compara la prioridad de ambos elementos hijos y se selecciona estrictamente el hijo dominante (el mayor en un Max-Heap). Esto previene que una vez efectuado el intercambio, el hijo que sube termine violando el invariante de orden sobre su propio hermano.
+
+4. ¿Qué pasa si el nodo actual tiene un solo hijo?
+
+ Por las propiedades geométricas de un heap completo, si un nodo tiene un solo hijo, este siempre será el izquierdo y corresponderá por fuerza al último elemento del arreglo. La guardia **pqHasRightChild** devolverá falso, omitiendo la comparación de hermanos y declarando al izquierdo como el dominante por defecto.
+
+5. ¿Por qué `delMax` tiene costo `O(log n)`?.
+
+ Porque en el peor escenario posible, el elemento de reemplazo puede verse forzado a bajar a lo largo de todo el árbol hasta alcanzar el nivel de las hojas. Dado que un heap binario completo está óptimamente balanceado, la profundidad máxima (o altura) está estrictamente acotada por [logsub2(n)] niveles.
+ 
+#### Bloque 5 - Validación explícita de la propiedad heap
+
