@@ -476,20 +476,26 @@
       1. Estado Inicial Físico: [90, 70, 80, 60, 30, 20, 40, 10] (n = 8).
 
       2. Extracción y Desplazamiento: Extraemos el frente (90) y salvamos el último elemento (10). Hacemos pop_back() reduciendo el tamaño a n = 7. Colocamos el 10 en la raíz (índice 0).
+
                 Arreglo resultante transitorio: **[10, 70, 80, 60, 30, 20, 40]**.
 
       3. Filtro hacia abajo (complHeapPercolateDownCount desde i = 0):
-               - Paso 1 (i = 0): Sus hijos están en **left = 1** (valor 70) y **right = 2** (valor **80**).
-                ¿Tiene hijo derecho? Sí (2 < 7).
-                ¿Cuál es el dominante? Como comp(70, 80) es verdadero (un Max-Heap busca el mayor), el hijo derecho es el dominante (c = 2).
-                ¿Se requiere intercambio? Sí, comp(a[0], a[2]) -> 10 < 80. Hacemos std::swap(a[0], a[2]) e incrementamos swaps = 1. El índice pasa a ser i = 2.
+
+            - Paso 1 (i = 0): Sus hijos están en **left = 1** (valor 70) y **right = 2** (valor **80**).
+
+               - ¿Tiene hijo derecho? Sí (2 < 7).
+               - ¿Cuál es el dominante? Como comp(70, 80) es verdadero (un Max-Heap busca el mayor), el hijo derecho es el dominante (c = 2).
+               - ¿Se requiere intercambio? Sí, comp(a[0], a[2]) -> 10 < 80. Hacemos std::swap(a[0], a[2]) e incrementamos swaps = 1. El índice pasa a ser i = 2.
                 Estado del arreglo: **[80, 70, 10, 60, 30, 20, 40]**.
-                - Paso 2 ($i = 2$): Sus nuevos hijos están en left = 5 (valor 20) y right = 6 (valor 40).
-                ¿Tiene hijo derecho? Sí (6 < 7).
-                ¿Cuál es el dominante? comp(20, 40) es verdadero, por lo que el hijo derecho vuelve a ser dominante (c = 6).
-                ¿Se requiere intercambio? Sí, comp(a[2], a[6]) -> 10 < 40. Hacemos 
+
+            - Paso 2 (i = 2): Sus nuevos hijos están en left = 5 (valor 20) y right = 6 (valor 40).
+
+                - ¿Tiene hijo derecho? Sí (6 < 7).
+                - ¿Cuál es el dominante? comp(20, 40) es verdadero, por lo que el hijo derecho vuelve a ser dominante (c = 6).
+                - ¿Se requiere intercambio? Sí, comp(a[2], a[6]) -> 10 < 40. Hacemos 
                 std::swap(a[2], a[6]) e incrementamos **swaps = 2**. El índice pasa a ser **i = 6**.Estado del arreglo: **[80, 70, 40, 60, 30, 20, 10]**.
-                - Paso 3 ($i = 6$): Calculamos **pqIsInternal(6, 7)**. El hijo izquierdo teórico estaría en **2 * 6 + 1 = 13**. Como **13 >= 7**, la función determina correctamente que es una hoja. El bucle finaliza.
+
+            - Paso 3 (i = 6): Calculamos **pqIsInternal(6, 7)**. El hijo izquierdo teórico estaría en **2 * 6 + 1 = 13**. Como **13 >= 7**, la función determina correctamente que es una hoja. El bucle finaliza.
 
       4. Retorno: Devuelve **swaps = 2**. El invariante estructural y de orden ha sido reparado con éxito.
 
