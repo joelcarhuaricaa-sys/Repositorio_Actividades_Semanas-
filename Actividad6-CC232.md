@@ -521,3 +521,238 @@
  
 #### Bloque 5 - Validación explícita de la propiedad heap
 
+ `Código de Validación`
+  
+  1. `Semana6/include/PQ_ComplHeap.h`
+       Modificamos el archivo de cabecera para insertar la función libre complHeapIsValid arriba de la clase, y actualizamos el método miembro isHeap() para que use la nueva lógica con el comparador interno de la clase.
+  
+ ```C++
+ // MOD-A6-B5: Función libre genérica para validación explícita de la propiedad heap
+ template<class T, class Compare>
+ bool complHeapIsValid(const std::vector<T>& a, Compare comp) {
+  if (a.size() <= 1) {
+    return true; // Casos base: vacío o con un único elemento siempre son válidos
+  }
+  
+  for (std::size_t i = 0; i < a.size(); ++i) {
+    std::size_t l = 2 * i + 1;
+    std::size_t r = 2 * i + 2;
+    
+    // Si el hijo izquierdo existe, el padre no debe perder en prioridad ante él
+    if (l < a.size() && comp(a[i], a[l])) {
+      return false;
+    }
+    // Si el hijo derecho existe, el padre no debe perder en prioridad ante él
+    if (r < a.size() && comp(a[i], a[r])) {
+      return false;
+    }
+  }
+  return true;
+ } 
+ ```
+
+ ```C++
+ // MOD-A6-B5: Redirección del método miembro heredado a la función libre validada
+  bool isHeap() const {
+    return complHeapIsValid(data_, comp_);
+  }
+
+ private:
+  std::vector<T> data_;
+  Compare comp_{};
+ };
+
+ }  // namespace ods
+ ```
+ `Pruebas Agregadas`
+
+  2. `Semana6/pruebas_internas/test_internal_week6.cpp`
+       Agregamos al inicio del archivo una suite de pruebas unitarias independiente (runComprehensiveHeapTests) para asegurar la verificación de los 6 escenarios.
+   
+   Agregamos un:
+     #include <functional>
+     #include "PQ_ComplHeap.h"
+
+ ```C++
+ // MOD-A6-B5: Suite de validación para las 6 condiciones requeridas por la guía
+ void runComprehensiveHeapTests() {
+  auto comp = std::less<int>();
+
+  // 1. Heap vacío
+  std::vector<int> v1;
+  assert(ods::complHeapIsValid(v1, comp) == true);
+
+  // 2. Heap con un solo elemento
+  std::vector<int> v2 = {42};
+  assert(ods::complHeapIsValid(v2, comp) == true);
+
+  // 3. Heap con elementos repetidos
+  std::vector<int> v3 = {100, 50, 50, 25, 25, 50};
+  assert(ods::complHeapIsValid(v3, comp) == true);
+
+  // 4. Heap construido por inserciones sucesivas
+  ods::PQ_ComplHeap<int> pq_insertions;
+  for (int x : {15, 20, 10, 30, 5}) {
+    pq_insertions.insert(x);
+    assert(pq_insertions.isHeap() == true); // Verificación incremental
+  }
+
+  // 5. Heap construido de golpe por heapify de Floyd
+  std::vector<int> raw_vector = {4, 10, 7, 1, 3, 9, 14, 2};
+  ods::PQ_ComplHeap<int> pq_floyd(raw_vector);
+  assert(pq_floyd.isHeap() == true);
+
+  // 6. Heap después de varias llamadas a delMax
+  pq_floyd.delMax();
+  assert(pq_floyd.isHeap() == true);
+  pq_floyd.delMax();
+  assert(pq_floyd.isHeap() == true);
+  pq_floyd.delMax();
+  assert(pq_floyd.isHeap() == true);
+ }
+ ``` 
+ El que sigue lo agregamos despues del int main(){  y antes del ods::PQ_ComplHeap<int> pq;
+ 
+ ``` C++
+ // Ejecutamos la batería nueva de pruebas
+  runComprehensiveHeapTests();
+ ``` 
+ `Evidencia de Compilación y Ejecución (ctest)` 
+
+        cmake --build build && ctest --test-dir build --output-on-failure
+
+ **Resultado de la terminal:**
+         
+        [100%] Built target sem6_test_internal
+        Internal ctest changing into directory: /home/gustavo/CC-232-main/Libreria_cc232/Semana6/build
+        Test project /home/gustavo/CC-232-main/Libreria_cc232/Semana6/build
+            Start 1: semana6_public
+        1/2 Test #1: semana6_public ...................   Passed    0.00 sec
+            Start 2: semana6_internal
+        2/2 Test #2: semana6_internal .................   Passed    0.00 sec
+
+        100% tests passed, 0 tests failed out of 2
+
+1. ¿Qué invariante verifica la función?
+
+ Verifica el Invariante de Orden Local del Heap Binario, el cual exige que para cada celda indexada válida de la colección, la prioridad de dicho nodo no sea superada por la prioridad de ninguno de sus hijos directos izquierdo o derecho (en un Max-Heap, el padre es => que sus hijos).
+
+2. ¿Por qué basta revisar relaciones padre-hijo?
+  
+  Porque la relación de orden jerárquico es transitiva en su definición lógica. Si aseguramos de forma consistente en todo el arreglo que el nodo A domina a su hijo B, y que el nodo B domina a su hijo C, matemáticamente queda garantizado que el nodo A domina al nodo C sin necesidad de evaluarlos directamente entre sí.
+
+3. ¿Por qué no es necesario comparar cada nodo con todos sus descendientes?
+
+ Por la propiedad descrita de transitividad. Diseñar un bucle anidado que contraste recursivamente cada nodo contra toda su descendencia convertiría un algoritmo de validación lineal en uno sumamente ineficiente de costo cuadrático (O(n^2)), recalculando relaciones ya amparadas por las aristas directas.
+
+4. ¿Cuál es el costo de validar todo el heap?
+
+  - `Complejidad Temporal:` O(n) (Lineal), ya que realiza un recorrido simple por las posiciones del vector inspeccionando una cantidad constante de hijos por cada nodo. 
+  - `Complejidad Espacial:` O(1) (Constante), debido a que no duplica el arreglo ni utiliza pilas recursivas extras; opera por referencias indexadas de solo lectura.
+
+5. ¿Por qué esta función es útil en pruebas pero no necesariamente en producción?
+
+ Porque en la fase de desarrollo funciona como un excelente oráculo de calidad (sanity check) para detectar cualquier error de desbordamiento de índices u off-by-one en los algoritmos de filtrado (**percolate**). Sin embargo, ponerlo en producción tras cada inserción o eliminación arruinaría la ventaja competitiva del heap: degradaría transacciones rápidas de tiempo logarítmico O(log n) a un costoso recorrido lineal O(n).
+
+#### Bloque 6 - Construcción de heap: inserciones sucesivas vs Floyd
+
+ `Demostración Modificada` 
+  
+  1. `Semana6/demos/demo_heapify_floyd.cpp`
+       Este realiza las dos construcciones de forma independiente, cuenta los intercambios y valida cada resultado con la función lógica que añadimos.
+   
+  Añadimos estos:
+      #include <functional>
+      #include "PQ_ComplHeap.h"
+  
+  Cambiamos esto:
+  
+ ```C++
+  int main() {
+  std::vector<int> a{17, 3, 11, 9, 6, 14, 1, 8, 5, 2};
+  printVector(a, "antes de heapify");
+  ods::complHeapHeapifyFloyd(a, std::less<int>{});
+  printVector(a, "despues de heapify");
+  std::cout << "Interpretacion: el mayor elemento sube a la raiz y cada padre domina a sus hijos.\n";
+ }
+ ```
+ por esto:
+
+ ```C++
+  int main() {
+  const std::vector<int> entrada = {4, 17, 3, 90, 55, 21, 8, 13, 34, 2, 1, 89};
+  auto comp = std::less<int>(); // Criterio de Max-Heap
+
+  std::cout << "=== MOD-A6-B6: COMPARATIVA DE CONSTRUCCIÓN DE HEAP ===\n\n";
+  printVector(entrada, "Arreglo inicial           ");
+  std::cout << "---------------------------------------------------------\n";
+
+  
+ // CONSTRUCCIÓN A: Inserciones Sucesivas (Top-Down)
+ 
+  std::vector<int> heapA;
+  std::size_t totalSwapsA = 0;
+  
+  for (int x : entrada) {
+    heapA.push_back(x);
+    totalSwapsA += instrumentedPercolateUp(heapA, heapA.size() - 1, comp);
+  }
+
+  printVector(heapA, "Construcción A (Inserciones)");
+  std::cout << "Intercambios exactos: " << totalSwapsA << "\n";
+  std::cout << "¿Es un Heap válido?  : " << (ods::complHeapIsValid(heapA, comp) ? "SÍ" : "NO") << "\n";
+  std::cout << "---------------------------------------------------------\n";
+
+  
+  // CONSTRUCCIÓN B: Algoritmo de Floyd / Heapify (Bottom-Up)
+
+  std::vector<int> heapB = entrada;
+  std::size_t totalSwapsB = 0;
+  
+  if (heapB.size() >= 2) {
+    for (std::size_t i = heapB.size() / 2; i-- > 0;) {
+      totalSwapsB += instrumentedPercolateDown(heapB, heapB.size(), i, comp);
+    }
+  }
+
+  printVector(heapB, "Construcción B (Floyd Heapify)");
+  std::cout << "Intercambios exactos: " << totalSwapsB << "\n";
+  std::cout << "¿Es un Heap válido?  : " << (ods::complHeapIsValid(heapB, comp) ? "SÍ" : "NO") << "\n";
+  std::cout << "---------------------------------------------------------\n";
+
+  return 0;
+ }
+ ```
+
+ `Tabla Comparativa`
+
+ | Metrica/Propiedad | Construccion A (Inserciones Sucesivas) | Construcción B (Floyd Heapify) |
+ | :--- | :--- | :--- |
+ | Arreglo Final Resultante | [90, 55, 89, 34, 17, 21, 8, 4, 13, 2, 1, 3] | [90, 55, 89, 34, 17, 21, 8, 13, 4, 2, 1, 3] | 
+ | Cantidad de Intercambios | 9 intercambios | 7 intercambios |
+ | Estrategia de Recorrido | Top-down (crece desde una hoja hacia arriba) | Bottom-up (corrige desde nodos internos hacia abajo) | 
+ | Complejidad Temporal | O(nlogn) | O(n) (Lineal) | 
+ | Validación (**isValidHeap**) | SI | SI | 
+
+1. ¿Por qué ambos resultados pueden ser heaps válidos aunque sus arreglos finales no sean idénticos?
+
+ Porque un heap estructural establece un orden parcial, no un orden total (a diferencia de un arreglo completamente ordenado). Múltiples disposiciones de elementos pueden cumplir perfectamente con el invariante de que cada nodo padre sea mayor o igual que sus hijos. La topología final depende estrictamente de la dirección de los intercambios del algoritmo utilizado.
+
+2. ¿Por qué insertar `n` elementos puede costar `O(n log n)`?
+
+ Porque al insertar de forma sucesiva, cada nuevo elemento se añade al final de la estructura (nivel más bajo) y trepa mediante **percolateUp**. En el peor de los casos, un elemento puede subir desde la base hasta la raíz, costando un tiempo proporcional a la altura actual del árbol (log i). 
+
+3. ¿Por qué Floyd puede construir el heap en `O(n)`?
+
+ Porque procesa el árbol de abajo hacia arriba (bottom-up). La gran mayoría de los nodos se concentran en los niveles más bajos (cerca de las hojas) y solo necesitan bajar una distancia muy corta (0 o 1 nivel) mediante **percolateDown**. Los niveles superiores, que filtran a mayor profundidad (O(log n)), contienen muy pocos nodos. 
+
+4. ¿Qué nodos procesa Floyd primero?
+
+ Procesa los subárboles de menor jerarquía, empezando desde el último nodo interno del arreglo (calculado como i = [n/2] - 1), y avanza en reversa decrementando el índice hasta alcanzar la raíz global en el índice **0**.
+
+5. ¿Por qué Floyd no necesita llamar a `percolateDown` desde las hojas?.
+
+ Porque un nodo hoja no tiene descendientes. Al carecer de hijos izquierdo o derecho con los cuales compararse, cumple de manera inmediata, aislada y trivial la propiedad de orden de un heap sin requerir ningún tipo de ajuste físico.
+
+#### Bloque 7 - Modificación de `heapSort`
+
