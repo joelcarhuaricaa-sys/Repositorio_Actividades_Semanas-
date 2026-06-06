@@ -1,0 +1,54 @@
+# Ignorar por completo la carpeta de construcción de CMake
+build/
+build_local/
+bin/
+obj/
+
+# Ignorar archivos generados por CMake de forma suelta
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# Ignorar ejecutables binarios según el sistema operativo
+*.exe
+*.out
+*.app
+*.bin
+
+# Archivos de objetos y librerías estáticas/dinámicas
+*.o
+*.obj
+*.a
+*.la
+*.lo
+*.so
+*.dylib
+*.dll
+
+ 
+#CONFIGURACIONES DE IDEs (VS CODE / CLION)
+ 
+.vscode/
+.idea/
+*.user
+*.suo
+*.sln
+
+ 
+#ARCHIVOS TEMPORALES Y DEL SISTEMA OPERATIVO
+ 
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+*.bak
+
+ 
+#EXCEPCIÓN: PERMITIR LA CARPETA DE RESULTADOS EXIGIDA
+ 
+# Nos aseguramos de que la carpeta de evidencias SÍ se suba al Git
+!resultados/
