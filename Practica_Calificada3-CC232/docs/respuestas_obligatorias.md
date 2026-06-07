@@ -36,3 +36,20 @@
    - Primero, la propiedad de árbol binario de búsqueda, donde para cualquier nodo, todas las llaves en su subárbol izquierdo son estrictamente menores y todas las llaves en su subárbol derecho son estrictamente mayores.
    - Segundo, la propiedad de montículo min-heap para las prioridades aleatorias, donde la prioridad de cualquier nodo padre es menor o igual a la prioridad de sus nodos hijos.
    - Tercero, la propiedad del tamaño aumentado, donde el tamaño del subárbol de un nodo es igual a su propia frecuencia local más la suma de los tamaños de sus subárboles izquierdo y derecho.
+
+### 9. ¿Dónde se actualiza ese invariante en el código?
+
+ Este invariante se actualiza en el código inmediatamente después de cualquier operación que altere la estructura física o los contadores del árbol. Específicamente, ocurre al final de la inserción recursiva en el método add, y dentro de las funciones de asistencia llamadas rotateLeft y rotateRight, las cuales recalculan los tamaños de los subárboles modificados mediante la función auxiliar updateSize.
+
+### 10. ¿Qué caso borde puede romper una solución superficial?
+
+ Una solución superficial puede romperse ante dos escenarios críticos: cuando el árbol está completamente vacío y se intenta realizar una consulta de tipo 2 o 3, o cuando el parámetro k solicitado supera ampliamente la cantidad real de elementos válidos que cumplen la condición en el subárbol. Si el código no intercepta estas condiciones comparando k contra los tamaños acumulados, intentará acceder a direcciones de memoria 
+nulas o punteros inexistentes, provocando una caída por fallo de segmentación.
+
+### 11. ¿Cómo manejas duplicados, empates o elementos obsoletos?
+
+ Los valores duplicados y los empates se manejan de manera nativa sin crear nodos adicionales en el árbol. Cada nodo posee un contador entero llamado frequency. Cuando se intenta insertar una llave que ya existe en el Treap, el algoritmo simplemente incrementa este contador en uno y actualiza de forma ascendente los tamaños de los subárboles. No se generan elementos obsoletos en este problema ya que no se solicitan operaciones de eliminación.
+
+### 12. ¿Cuál es la complejidad temporal por operación?
+
+ La complejidad temporal por operación es de O de logaritmo de N en promedio, tanto para la inserción de un elemento como para el procesamiento de las consultas de búsqueda de extremos posicionales de tipo 2 y tipo 3. Esto se debe a que todas las funciones descienden de manera directa por la altura balanceada del Treap.
