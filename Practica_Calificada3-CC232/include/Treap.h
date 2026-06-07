@@ -29,6 +29,12 @@ private:
     int getSubtreeSize(Node* u) const {
         return u ? u->subtree_size : 0;
     }
+    
+    void updateSize(Node* u) {
+        if (u) {
+            u->subtree_size = u->frequency + getSubtreeSize(u->left) + getSubtreeSize(u->right);
+        }
+    }
 
 public:
     Treap() : rng_(232) {}
