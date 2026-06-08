@@ -105,6 +105,23 @@ public:
                 return;
             }
         }
+
+        Node* u = new Node(x, p, prev);
+        if (x < prev->key) prev->left = u;
+        else prev->right = u;
+
+        Node* tmp = u;
+        while (tmp) {
+            updateSize(tmp);
+            tmp = tmp->parent;
+        }
+
+        while (u->parent && u->parent->priority > u->priority) {
+            if (u->parent->right == u) rotateLeft(u->parent);
+            else rotateRight(u->parent);
+        }
+        if (!u->parent) root_ = u;
+    }
 };
 
 } // namespace ods
