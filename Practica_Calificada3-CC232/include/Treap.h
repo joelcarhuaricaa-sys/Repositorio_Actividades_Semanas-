@@ -36,6 +36,23 @@ private:
         }
     }
 
+    void rotateLeft(Node* u) {
+        if (!u || !u->right) return;
+        Node* w = u->right;
+        w->parent = u->parent;
+        if (!u->parent) root_ = w;
+        else if (u->parent->left == u) u->parent->left = w;
+        else u->parent->right = w;
+
+        u->right = w->left;
+        if (u->right) u->right->parent = u;
+        w->left = u;
+        u->parent = w;
+
+        updateSize(u);
+        updateSize(w);
+    }
+
 public:
     Treap() : rng_(232) {}
     ~Treap() { clear(); }
