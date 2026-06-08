@@ -122,6 +122,40 @@ public:
         }
         if (!u->parent) root_ = u;
     }
+
+    int countLess(const T& x) const {
+        int count = 0;
+        Node* curr = root_;
+        while (curr) {
+            if (x < curr->key) {
+                curr = curr->left;
+            } else if (curr->key < x) {
+                count += getSubtreeSize(curr->left) + curr->frequency;
+                curr = curr->right;
+            } else {
+                count += getSubtreeSize(curr->left);
+                break;
+            }
+        }
+        return count;
+    }
+
+    int countLessOrEqual(const T& x) const {
+        int count = 0;
+        Node* curr = root_;
+        while (curr) {
+            if (x < curr->key) {
+                curr = curr->left;
+            } else if (curr->key < x) {
+                count += getSubtreeSize(curr->left) + curr->frequency;
+                curr = curr->right;
+            } else {
+                count += getSubtreeSize(curr->left) + curr->frequency;
+                break;
+            }
+        }
+        return count;
+    }
 };
 
 } // namespace ods
