@@ -79,6 +79,32 @@ public:
     }
 
     Node* root() const { return root_; }
+
+    void add(const T& x) {
+        std::uint64_t p = rng_();
+        if (!root_) {
+            root_ = new Node(x, p);
+            return;
+        }
+
+        Node* curr = root_;
+        Node* prev = nullptr;
+        while (curr) {
+            prev = curr;
+            if (x < curr->key) {
+                curr = curr->left;
+            } else if (curr->key < x) {
+                curr = curr->right;
+            } else {
+                curr->frequency++;
+                Node* tmp = curr;
+                while (tmp) {
+                    updateSize(tmp);
+                    tmp = tmp->parent;
+                }
+                return;
+            }
+        }
 };
 
 } // namespace ods
