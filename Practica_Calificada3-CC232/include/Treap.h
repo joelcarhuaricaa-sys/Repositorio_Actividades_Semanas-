@@ -70,11 +70,20 @@ private:
         updateSize(w);
     }
 
+    void destroy(Node* u) {
+        if (!u) return;
+        destroy(u->left);
+        destroy(u->right);
+        delete u;
+    }
+
+
 public:
     Treap() : rng_(232) {}
     ~Treap() { clear(); }
 
     void clear() {
+        destroy(root_);
         root_ = nullptr;
     }
 
