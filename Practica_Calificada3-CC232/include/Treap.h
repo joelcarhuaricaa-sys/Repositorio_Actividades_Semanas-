@@ -82,7 +82,7 @@ public:
     Treap() : rng_(232) {}
     ~Treap() { clear(); }
 
-     void clear() {
+    void clear() {
         destroy(root_);
         root_ = nullptr;
     }
