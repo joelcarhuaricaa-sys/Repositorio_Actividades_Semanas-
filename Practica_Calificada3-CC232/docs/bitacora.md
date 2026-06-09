@@ -13,4 +13,4 @@
 ## Día 3
 - **Problema trabajado:** Desarrollo del motor algorítmico posicional del Treap.
 - **Estructura:** Inyección de consultas acumulativas binarias e indexación estadística K-th.
-- **Errores:** Se ajustó la indexación base $0$ en la resta de frecuencias para prevenir desbordamientos posicionales.
+- **Errores:** Se ajustó la indexación base $0$ en la resta de frecuencias para prevenir desbordamientos posicionales
