@@ -156,6 +156,22 @@ public:
         }
         return count;
     }
+
+    T findKth(int index) const {
+        Node* curr = root_;
+        while (curr) {
+            int left_size = getSubtreeSize(curr->left);
+            if (index < left_size) {
+                curr = curr->left;
+            } else if (index < left_size + curr->frequency) {
+                return curr->key;
+            } else {
+                index -= (left_size + curr->frequency);
+                curr = curr->right;
+            }
+        }
+        return -1;
+    }
 };
 
 } // namespace ods
