@@ -14,3 +14,8 @@
 - **Problema trabajado:** Desarrollo del motor algorítmico posicional del Treap.
 - **Estructura:** Inyección de consultas acumulativas binarias e indexación estadística K-th.
 - **Errores:** Se ajustó la indexación base $0$ en la resta de frecuencias para prevenir desbordamientos posicionales
+
+## Día 4
+- **Problema trabajado:** Interfaz funcional para AtCoder y optimización de flujos rápidos de I/O.
+- **Estructura:** Construcción del despachador condicional en `main.cpp`.
+- **Errores:** Ninguno, integración limpia entre la lógica del Treap y el solucionador.
