@@ -1,0 +1,4 @@
+   BENCHMARK DE RENDIMIENTO: TREAP PC3     
+Métricas registradas para 100000 operaciones:
+ -> Tiempo total de Inserción: 94.0722 ms
+ -> Tiempo total de Consultas K-th: 137.593 ms

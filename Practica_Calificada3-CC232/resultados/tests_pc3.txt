@@ -1,0 +1,4 @@
+Ejecutando Suite de Verificación Obligatoria...
+[PASÓ] Prueba de Estructura Vacía e Inexistencia.
+[PASÓ] Prueba de Elementos Duplicados y Concurrencia.
+Todas las pruebas unitarias pasaron con éxito.
