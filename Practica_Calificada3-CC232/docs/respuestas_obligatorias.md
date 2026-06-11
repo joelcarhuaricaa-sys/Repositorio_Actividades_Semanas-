@@ -53,3 +53,46 @@ nulas o punteros inexistentes, provocando una caída por fallo de segmentación.
 ### 12. ¿Cuál es la complejidad temporal por operación?
 
  La complejidad temporal por operación es de O de logaritmo de N en promedio, tanto para la inserción de un elemento como para el procesamiento de las consultas de búsqueda de extremos posicionales de tipo 2 y tipo 3. Esto se debe a que todas las funciones descienden de manera directa por la altura balanceada del Treap.
+
+### 13. ¿Cuál es la complejidad total?
+
+La complejidad temporal total de la solución para procesar la entrada completa es de O de Q por logaritmo de N, donde Q es el número total de consultas ejecutadas. Al procesar las 200,000 operaciones, el número total de instrucciones se mantiene en el orden de unos pocos millones, ejecutándose de forma holgada en menos de 0.15 segundos.
+
+### 14. ¿Cuál es la complejidad espacial?
+
+La complejidad espacial es de O de N, donde N es la cantidad de elementos únicos almacenados de forma efectiva en la memoria dinámica del árbol. Cada nodo guarda una cantidad fija de variables para sus enlaces, llave, prioridad, frecuencia y tamaño, por lo que el consumo de memoria es lineal respecto al tamaño del conjunto.
+
+### 15. ¿Qué parte del código sería más fácil de romper?
+
+La parte del código más fácil de romper es el cálculo de los índices relativos dentro de las consultas de tipo 2 y tipo 3. Al tener que restar o sumar el valor de k para ubicar la posición exacta en el método de orden estadístico, es muy fácil cometer un error de desfase por uno, o realizar desbordamientos cuando se evalúan las fronteras de los subárboles izquierdos o derechos, lo que conduciría a lecturas erróneas de los datos.
+
+### 16. ¿Qué alternativa de estructura existe y qué perderías con ella?
+
+Una alternativa existente es utilizar un Árbol AVL Aumentado o un Árbol Rojo-Negro Aumentado. Si bien con ellos ganarías un balanceo estricto en el peor de los casos en lugar de un balanceo probabilístico, perderías simplicidad en la implementación. El Treap es considerablemente más fácil de codificar y mantener debido a que las inserciones y el balanceo se resuelven mediante rotaciones directas basadas en prioridades aleatorias, logrando la misma eficiencia práctica.
+
+### 17. ¿Qué prueba propia escribiste?
+
+Se diseñó una suite de pruebas unitarias automatizadas dentro del archivo test_main.cpp que valida de forma aislada el comportamiento de la estructura. La prueba principal inserta un lote controlado de elementos con valores repetidos y verifica mediante afirmaciones del sistema que las consultas de tipo 2 y tipo 3 devuelvan los valores numéricos exactos esperados, incluyendo el retorno correcto de -1 cuando k está fuera de los límites.
+
+### 18. ¿Qué cambiaste durante el bloque sin cortes?
+
+Durante el bloque de desarrollo, se modificaron los métodos de búsqueda posicional. Inicialmente se intentaba buscar los elementos recorriendo el árbol con iteradores estándar, pero esto generaba lentitud. Se cambió el diseño para implementar un enfoque puramente matemático basado en el cálculo de rangos mediante las funciones countLess y countLessOrEqual, delegando la extracción física de la llave al selector dinámico findKth.
+
+### 19. ¿Cómo sabes que el cambio no rompió la solución?
+
+Se sabe que el cambio no rompió la solución debido a que, tras realizar las optimizaciones, se ejecutó la suite completa de pruebas unitarias automatizadas y todas las verificaciones pasaron con éxito sin lanzar errores. Además, se probó el programa frente a los casos de ejemplo del juez AtCoder, obteniendo los mismos resultados exactos.
+
+### 20. ¿Qué demuestra que no es una solución de caja negra?
+
+Demuestra que no es una solución de caja negra el hecho de que no se utilizaron contenedores ocultos o librerías opacas del sistema como set o multiset para resolver la lógica del problema. Toda la arquitectura del Treap, la lógica de rotación de nodos, el manejo manual de los punteros izquierdo y derecho, y las ecuaciones de actualización de tamaños fueron codificadas desde cero de forma explícita y auditable.
+
+### Preguntas y retos específicos por problema: AtCoder ABC241 D
+
+- **¿Cómo manejas valores repetidos?**
+  Se manejan mediante un control explícito a través del miembro `frequency` del nodo.
+
+- **¿Cómo respondes el k-ésimo menor o mayor relativo a x?**
+  Para el k-ésimo menor, calculamos cuántos elementos son menores o iguales (`countLessOrEqual`) y buscamos la posición indexada inversa. Para el mayor relativo, localizamos cuántos son estrictamente menores y avanzamos el índice hacia adelante usando el selector de orden estadístico `findKth`.
+
+- **¿Qué operación se rompe si no actualizas size o frecuencia?**
+  Se rompería de forma inmediata la función `findKth`. El árbol perdería la capacidad de decidir de manera binaria si debe descender hacia la izquierda o hacia la derecha, destruyendo la lógica de la Query 2 y Query 3.

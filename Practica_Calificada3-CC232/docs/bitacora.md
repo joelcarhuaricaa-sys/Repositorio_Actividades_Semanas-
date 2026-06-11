@@ -19,3 +19,7 @@
 - **Problema trabajado:** Interfaz funcional para AtCoder y optimización de flujos rápidos de I/O.
 - **Estructura:** Construcción del despachador condicional en `main.cpp`.
 - **Errores:** Ninguno, integración limpia entre la lógica del Treap y el solucionador.
+
+## Día 5
+- **Problema trabajado:** Cierre de la documentación técnica final, incorporación de reportes reproducibles y validación total del cuestionario.
+- **Estructura:** Pipeline completado al 100% libre de binarios.
