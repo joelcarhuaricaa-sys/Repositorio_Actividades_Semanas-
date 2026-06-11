@@ -1,32 +1,35 @@
-//explicacion de las funciona de acotacion
-    // Encuentra el nodo con la clave más grande que sea <= x
-    Node* findMaxLessOrEqual(const T& x) const {
-        Node* curr = root_;
-        Node* res = nullptr;
-        while (curr) {
-            if (curr->key <= x) {
-                res = curr; 
-                curr = curr->right; // Buscamos si hay uno más grande que también cumpla
-            } else {
-                curr = curr->left;
-            }
+//explicacion de las funciona  de vecindad por punteros.
+    // Devuelve el nodo predecesor en orden simétrico (Inorder)
+    Node* getPredecessor(Node* u) const {
+        if (!u) return nullptr;
+        if (u->left) {
+            Node* curr = u->left;
+            while (curr->right) curr = curr->right;
+            return curr;
         }
-        return res;
+        Node* p = u->parent;
+        while (p && u == p->left) {
+            u = p;
+            p = p->parent;
+        }
+        return p;
     }
 
-    // Encuentra el nodo con la clave más pequeña que sea >= x
-    Node* findMinGreaterOrEqual(const T& x) const {
-        Node* curr = root_;
-        Node* res = nullptr;
-        while (curr) {
-            if (curr->key >= x) {
-                res = curr;
-                curr = curr->left; // Buscamos si hay uno más pequeño que también cumpla
-            } else {
-                curr = curr->right;
-            }
+    // Devuelve el nodo sucesor en orden simétrico (Inorder)
+    Node* getSuccessor(Node* u) const {
+        if (!u) return nullptr;
+        if (u->right) {
+            Node* curr = u->right;
+            while (curr->left) curr = curr->left;
+            return curr;
         }
-        return res;
+        Node* p = u->parent;
+        while (p && u == p->right) {
+            u = p;
+            p = p->parent;
+        }
+        return p;
     }
+};
 
-     
+} // namespace ods
