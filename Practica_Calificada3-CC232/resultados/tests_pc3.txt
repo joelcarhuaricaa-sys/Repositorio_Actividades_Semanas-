@@ -1,4 +1,5 @@
-Ejecutando Suite de Verificación Obligatoria...
+Ejecutando Suite de Verificación Obligatoria
 [PASÓ] Prueba de Estructura Vacía e Inexistencia.
 [PASÓ] Prueba de Elementos Duplicados y Concurrencia.
+[PASÓ] Prueba Avanzada de Duplicados y Saltos de Nodos
 Todas las pruebas unitarias pasaron con éxito.

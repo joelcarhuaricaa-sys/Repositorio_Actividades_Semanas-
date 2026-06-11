@@ -1,4 +1,17 @@
-   BENCHMARK DE RENDIMIENTO: TREAP PC3     
-Métricas registradas para 100000 operaciones:
- -> Tiempo total de Inserción: 94.0722 ms
- -> Tiempo total de Consultas K-th: 137.593 ms
+ANÁLISIS DE CASOS BORDE - TREAP SEQUENCE QUERY (ABC241_D)
+ 
+1. ESTRUCTURA COMPLETAMENTE VACÍA
+   - Escenario: Ejecutar queries de tipo 2 o tipo 3 cuando no se ha insertado ningún elemento.
+   - Comportamiento: Las funciones `findMaxLessOrEqual` y `findMinGreaterOrEqual` retornan de manera segura un puntero `nullptr`. El sistema intercepta este estado inmediatamente y devuelve `-1` sin causar fallos de segmentación (Segmentation Fault).
+
+2. VALOR DE K FUERA DE RANGO / INSUFICIENTES ELEMENTOS
+   - Escenario: Buscar el K-ésimo elemento válido (ej. K=5) en un rango donde solo existen menos de K elementos válidos totales.
+   - Comportamiento: El algoritmo itera a través de los punteros del árbol balanceado (`getPredecessor` / `getSuccessor`). Si los elementos de los nodos colapsan y el puntero llega a ser `nullptr` antes de satisfacer la demanda de K, el bucle finaliza limpiamente y retorna `-1`.
+
+3. MANEJO MASIVO DE ELEMENTOS DUPLICADOS
+   - Escenario: Inserción del mismo elemento decenas de miles de veces consecutivas.
+   - Comportamiento: El Treap no crea nodos redundantes en memoria para elementos idénticos. Utiliza un campo explícito llamado `frequency`. Las consultas reducen el valor remanente de K sustrayendo la frecuencia del nodo actual de forma directa, permitiendo saltar bloques enteros de duplicados en tiempo O(1) por nodo físico.
+
+4. LÍMITES DE DESBORDE DE ENTEROS (OVERFLOW)
+   - Escenario: Las consultas ingresan valores de X en el extremo superior de representación (hasta 10^18).
+   - Comportamiento: Todas las variables de clave del árbol balanceado y parámetros de interfaz se definieron de forma estricta usando tipos nativos `long long` en C++, garantizando estabilidad posicional completa.
