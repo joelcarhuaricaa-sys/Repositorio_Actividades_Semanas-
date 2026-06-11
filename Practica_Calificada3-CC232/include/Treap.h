@@ -1,5 +1,3 @@
-Treap.h
-
 #pragma once
 
 #include <algorithm>
@@ -14,8 +12,8 @@ public:
     struct Node {
         T key{};
         std::uint64_t priority{0};
-        int frequency{1};     // Control explitico de elementos duplicados
-        int subtree_size{1};  // Invariante de aumento para orden estadistico
+        int frequency{1};     // Control explícito de elementos duplicados
+        int subtree_size{1};  // Invariante de aumento para orden estadístico
         Node* parent{nullptr};
         Node* left{nullptr};
         Node* right{nullptr};
@@ -31,7 +29,7 @@ private:
     int getSubtreeSize(Node* u) const {
         return u ? u->subtree_size : 0;
     }
-
+    
     void updateSize(Node* u) {
         if (u) {
             u->subtree_size = u->frequency + getSubtreeSize(u->left) + getSubtreeSize(u->right);
@@ -133,6 +131,9 @@ public:
         if (!u->parent) root_ = u;
     }
 
+    // --- NUEVAS FUNCIONES DE NAVEGACIÓN Y BÚSQUEDA ---
+
+    // Encuentra el nodo con la clave más grande que sea <= x
     Node* findMaxLessOrEqual(const T& x) const {
         Node* curr = root_;
         Node* res = nullptr;
@@ -195,4 +196,4 @@ public:
     }
 };
 
-}// namespace ods
+} // namespace ods
