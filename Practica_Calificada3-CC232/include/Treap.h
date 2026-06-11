@@ -130,9 +130,7 @@ public:
         }
         if (!u->parent) root_ = u;
     }
-
-    // --- NUEVAS FUNCIONES DE NAVEGACIÓN Y BÚSQUEDA ---
-
+  
     // Encuentra el nodo con la clave más grande que sea <= x
     Node* findMaxLessOrEqual(const T& x) const {
         Node* curr = root_;
