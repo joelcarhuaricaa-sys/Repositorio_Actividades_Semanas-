@@ -35,7 +35,7 @@ Después de cada operación que modifique la estructura (inserción o rotaciones
 - **Propiedad Heap:** Para todo nodo $u$ con padre válido, se cumple de manera probabilística que `u->parent->priority <= u->priority` (Min-Heap).
 - **Ecuación Estructural de Aumento:** El tamaño del subárbol está determinado por la suma exacta de sus frecuencias internas más los tamaños reportados por sus hijos directos
 
-## 📊 Estructura del Proyecto
+## Estructura del Proyecto
 El proyecto utiliza una arquitectura limpia e incremental dividida de la siguiente manera:
 - `include/`: Contiene la plantilla del Treap aumentado (`Treap.h`) y la definición de la clase de negocio (`Solution.h`).
 - `src/`: Implementación de queries de despachado lógico (`Solution.cpp`).
@@ -82,26 +82,30 @@ Indica qué contiene cada carpeta o archivo importante:
 
 El repositorio no debe versionar builds, ejecutables ni archivos generados. Para ello se ha configurado el archivo gitignore encargado de filtrar y omitir archivos temporales del sistema, carpetas de compilación y binarios.
 
+```bash
+git ls-files | grep -E "(^build/|cmake-build|\.exe$|\.out$|\.o$|\.obj$|CMakeCache.txt|CMakeFiles|__pycache__)"
+```
+
 ## Comando sugerido para verificar archivos generados versionados:
 
  ```C++
  git ls-files | grep -E "(^build/|cmake-build|\.exe$|\.out$|\.o$|\.obj$|CMakeCache.txt|CMakeFiles|__pycache__)"
  ```
  
-### Compilación
+## Compilación
 
  ```bash
  cmake -S . -B build
  cmake --build build
  ```
  
-### Ejecución
+## Ejecución
 
  ```bash
  ./build/nombre_del_programa
  ```
 
-### Pruebas
+## Pruebas
 
 1. Caso mínimo
 
@@ -178,3 +182,26 @@ El repositorio no debe versionar builds, ejecutables ni archivos generados. Para
 
     - qué aspecto valida: Valida el escalamiento logarítmico frente a una solución ingenua basada en vectores dinámicos ordenados secuencialmente. Mientras que la solución ingenua habría requerido tiempos de cómputo cuadráticos provocando parálisis por exceso de tiempo, la solución estructurada con el Treap Aumentado despacha el lote de estrés completo en pocos milisegundos.
 
+## Evidencia Git
+
+ ```bash
+ git status
+ git log --date=short --pretty=format:"%ad - %h - %an - %s"
+ git log --date=short --pretty=format:"%ad" | sort | uniq -c
+ git log --graph --oneline --decorate --all
+ git log --date=short --name-status --pretty=format:"%ad - %h - %s" -- Semana4 Semana5   Semana6 Practicas practica-calificada3
+ git log --date=short --stat --pretty=format:"%ad - %h - %s"
+ ```
+
+## Bitacora
+
+         ocs/bitacora.md
+
+## Respuesta obligatorias
+
+         docs/respuestas_obligatorias.md
+
+## Declaracion de Autoria 
+
+Declaro que entiendo el código entregado, que puedo explicarlo, compilarlo, ejecutarlo y modificarlo sin ayuda externa durante la grabación.
+También declaro que el repositorio entregado corresponde al trabajo mostrado en el video y que no contiene builds, ejecutables ni archivos generados usados para aparentar funcionamiento.
