@@ -1,3 +1,5 @@
+Treap.h
+
 #pragma once
 
 #include <algorithm>
@@ -29,7 +31,7 @@ private:
     int getSubtreeSize(Node* u) const {
         return u ? u->subtree_size : 0;
     }
-    
+
     void updateSize(Node* u) {
         if (u) {
             u->subtree_size = u->frequency + getSubtreeSize(u->left) + getSubtreeSize(u->right);
@@ -76,7 +78,6 @@ private:
         destroy(u->right);
         delete u;
     }
-
 
 public:
     Treap() : rng_(232) {}
@@ -132,55 +133,66 @@ public:
         if (!u->parent) root_ = u;
     }
 
-    int countLess(const T& x) const {
-        int count = 0;
+    Node* findMaxLessOrEqual(const T& x) const {
         Node* curr = root_;
+        Node* res = nullptr;
         while (curr) {
-            if (x < curr->key) {
-                curr = curr->left;
-            } else if (curr->key < x) {
-                count += getSubtreeSize(curr->left) + curr->frequency;
-                curr = curr->right;
+            if (curr->key <= x) {
+                res = curr; 
+                curr = curr->right; // Buscamos si hay uno más grande que también cumpla
             } else {
-                count += getSubtreeSize(curr->left);
-                break;
+                curr = curr->left;
             }
         }
-        return count;
+        return res;
     }
 
-    int countLessOrEqual(const T& x) const {
-        int count = 0;
+    // Encuentra el nodo con la clave más pequeña que sea >= x
+    Node* findMinGreaterOrEqual(const T& x) const {
         Node* curr = root_;
+        Node* res = nullptr;
         while (curr) {
-            if (x < curr->key) {
-                curr = curr->left;
-            } else if (curr->key < x) {
-                count += getSubtreeSize(curr->left) + curr->frequency;
-                curr = curr->right;
+            if (curr->key >= x) {
+                res = curr;
+                curr = curr->left; // Buscamos si hay uno más pequeño que también cumpla
             } else {
-                count += getSubtreeSize(curr->left) + curr->frequency;
-                break;
+                curr = curr->right;
             }
         }
-        return count;
+        return res;
     }
 
-    T findKth(int index) const {
-        Node* curr = root_;
-        while (curr) {
-            int left_size = getSubtreeSize(curr->left);
-            if (index < left_size) {
-                curr = curr->left;
-            } else if (index < left_size + curr->frequency) {
-                return curr->key;
-            } else {
-                index -= (left_size + curr->frequency);
-                curr = curr->right;
-            }
+    // Devuelve el nodo predecesor en orden simétrico (Inorder)
+    Node* getPredecessor(Node* u) const {
+        if (!u) return nullptr;
+        if (u->left) {
+            Node* curr = u->left;
+            while (curr->right) curr = curr->right;
+            return curr;
         }
-        return -1;
+        Node* p = u->parent;
+        while (p && u == p->left) {
+            u = p;
+            p = p->parent;
+        }
+        return p;
+    }
+
+    // Devuelve el nodo sucesor en orden simétrico (Inorder)
+    Node* getSuccessor(Node* u) const {
+        if (!u) return nullptr;
+        if (u->right) {
+            Node* curr = u->right;
+            while (curr->left) curr = curr->left;
+            return curr;
+        }
+        Node* p = u->parent;
+        while (p && u == p->right) {
+            u = p;
+            p = p->parent;
+        }
+        return p;
     }
 };
 
-} // namespace ods
+}// namespace ods
