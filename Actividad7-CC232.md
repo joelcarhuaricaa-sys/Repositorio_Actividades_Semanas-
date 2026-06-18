@@ -81,8 +81,7 @@
  | Comando Ejecutivo | Resultado de la Terminal(Salida) | Error | Interpretacion/ |
  | :--- | :--- | :--- | :--- |
  | grep "cc232_add_sem7_target(sem7_demo" CMakeLists.txt | Muestra 8 líneas con los nombres de los objetivos que empiezan con sem7_demo_.... | Ninguno | Existen exactamente 8 targets de demostración configurados para comparar AVL, BST y Red-Black Tree. | 
- | grep "add_test" CMakeLists.txt | add_test(NAME semana7_public COMMAND sem7_test_public)
- add_test(NAME semana7_internal COMMAND sem7_test_internal) | Ninguno | Aparecen 2 suites de pruebas: una pública (semana7_public) y una interna (semana7_internal). | 
+ | grep "add_test" CMakeLists.txt | add_test(NAME semana7_public COMMAND sem7_test_public)add_test(NAME semana7_internal COMMAND sem7_test_internal) | Ninguno | Aparecen 2 suites de pruebas: una pública (semana7_public) y una interna (semana7_internal). | 
  | cat include/Capitulo7.h grep "#include" | Devuelve una lista de 10 líneas de código con archivos .h (desde Entry.h hasta RedBlackTreeLLRB.h). | Ninguno | Capitulo7.h incluye 10 archivos de cabecera que componen las dos líneas pedagógicas del curso. | 
  | grep -A 8 "Semana5" README.md | Despliega un diagrama de texto (text) que conecta Semana 5 → Semana 6 → Semana 7. | Ninguno | La relación es una evolución del balanceo. S5 introduce BST (riesgo lineal), S6 introduce rotaciones locales (Treap) y S7 consolida el balance estricto (O(logn)) con AVL y Red-Black. | 
  | grep -A 5 "una carpeta no hereda" README.md | Muestra el fragmento de texto que aclara que las carpetas no heredan, sino las clases. | Ninguno | No se hereda entre carpetas porque la herencia es un concepto de POO para tipos de datos. Las carpetas solo organizan de forma continua y reutilizan código. | 
