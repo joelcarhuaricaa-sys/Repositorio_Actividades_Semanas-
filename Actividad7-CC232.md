@@ -293,6 +293,196 @@
 
  La idea central es que, tras las inserciones y borrados, el árbol siga siendo válido como AVL y como BST.
 
+#### Bloque 4 - Rotaciones AVL: casos LL, RR, LR y RL
+
+
+ Tabla de rotaciones
+
+ | Caso	 | Secuencia insertada | Nodo desbalanceado | Rotación aplicada | Inorder antes | Inorder después | Altura final | 
+ | :--- | :--- | :--- | 
+ | LL	| 30, 20, 10 | 30 |	Rotación simple a la derecha | 10, 20, 30 | 10, 20, 30 |	1 |
+ | RR	| 10, 20, 30 | 10 | Rotación simple a la izquierda | 10, 20, 30 | 10, 20, 30 | 1 |
+ | LR | 30, 10, 20 | 30 | Rotación doble: izquierda luego derecha | 10, 20, 30 | 10, 20, 30 | 1 |
+ |RL | 10, 30, 20| 10 | Rotación doble: derecha luego izquierda | 10, 20, 30 | 10, 20, 30 | 1 |
+
+ Dibujos pequeños
+
+ LL
+  
+      Antes:        Después:
+        30            20
+       /             /  \
+      20            10   30
+      /
+      10
+
+ RR
+
+       Antes:        Después:
+       10             20
+        \            /  \
+        20           10   30
+         \
+          30
+
+ LR
+
+       Antes:        Después:
+       30             20
+       /              /  \
+       10             10   30
+        \
+        20
+
+ RL
+
+       Antes:        Después:
+       10              20
+        \             /  \
+        30            10   30
+        /
+       20       
+
+1. ¿Qué diferencia hay entre una rotación simple y una rotación doble?
+
+ - Una rotación simple corrige el desequilibrio con un solo giro alrededor de un enlace.
+ - Una rotación doble requiere dos rotaciones simples consecutivas para dejar el subárbol equilibrado.
+
+2. ¿Por qué LL y RR se corrigen con una sola rotación?
+
+ - En LL y RR el desbalanceo se presenta en la forma de una cadena sencilla hacia la izquierda o hacia la derecha.
+ - Ese patrón se resuelve con una sola rotación: derecha para LL y izquierda para RR.
+
+3. ¿Por qué LR y RL requieren dos pasos?
+
+ - En LR y RL el nodo desbalanceado tiene un hijo que está desbalanceado en el sentido contrario.
+ - Primero se corrige el hijo interno y luego el nodo padre, por eso necesitan dos rotaciones.
+
+4. ¿Qué parte del árbol cambia y qué parte permanece igual?
+
+ - Cambia la estructura local del subárbol afectado: raíz, hijo y nietos se reacomodan.
+ - Permanece igual el conjunto de valores y, por tanto, el orden relativo de los elementos.
+
+5. ¿Por qué el inorder debe ser el mismo antes y después de reestructurar?.
+
+ - La rotación solo reestructura la forma del árbol, no cambia los valores ni su distribución relativa bajo la propiedad BST.
+ - Por eso, el recorrido inorder sigue siendo la misma secuencia ordenada.
+
+ **Argumento de preservación del orden BST**
+
+ Una rotación no rompe la propiedad BST porque:
+
+   - el subárbol izquierdo de la nueva raíz sigue teniendo valores menores,
+   - el subárbol derecho sigue teniendo valores mayores,
+   - y los subárboles que se reubican conservan sus respectivos intervalos de valores.
+
+ En otras palabras, la rotación cambia la forma, pero no cambia el orden de los elementos. Por eso el inorder sigue siendo el mismo y el árbol sigue siendo un BST.
+
+#### Bloque 5 - Red-Black Tree: balance por colores
+
+1. ¿Qué propiedad BST mantiene Red-Black Tree?
+
+  Red-Black Tree conserva la propiedad de un BST:
+
+   - Todo nodo del subárbol izquierdo es menor que el nodo actual.
+   - Todo nodo del subárbol derecho es mayor que el nodo actual.
+   - Cada subárbol también es un BST.
+ Es decir, el orden de búsqueda sigue siendo el mismo que en un árbol binario de búsqueda normal.
+
+2. ¿Qué propiedades de color debe cumplir un Red-Black Tree?
+
+ Un Red-Black Tree debe cumplir estas reglas de color:
+
+ - La raíz es negra.
+ - Todo nodo hoja (o nulo) es negro.
+ - Un nodo rojo no puede tener hijo rojo.
+ - Por lo tanto, no puede haber dos nodos rojos consecutivos.
+ - Todos los caminos desde un nodo a sus hojas descendientes tienen la misma cantidad de nodos negros.
+
+3. ¿Por qué la raíz debe terminar negra?
+
+ La raíz debe ser negra para mantener la propiedad de equilibrio global y evitar que la altura negra se vea alterada desde la raíz. Además, esto simplifica la conservación de las propiedades de color al insertar o eliminar.
+
+4. ¿Qué significa que no pueda haber dos nodos rojos consecutivos?
+
+ Significa que no puede haber un padre y un hijo ambos rojos.
+ En otras palabras, entre dos nodos rojos no puede haber una relación directa de padre-hijo.
+
+ Esto evita que el árbol se vuelva demasiado “ancho” en términos de profundidad relativa y ayuda a mantener el balance.
+
+5. ¿Qué representa la altura negra?
+
+ La altura negra es el número de nodos negros que se recorren en cualquier camino desde un nodo hasta una hoja externa (nula), contando el nodo inicial o no según la convención usada.
+ La idea importante es que todos esos caminos deben tener la misma cantidad de nodos negros.
+
+6. ¿Por qué Red-Black Tree permite un balance menos estricto que AVL?
+
+ AVL exige que el factor de balance sea muy estricto, es decir:
+ 
+     ∣h(left)−h(right)∣≤1
+
+ Red-Black Tree, en cambio, usa colores y la altura negra como criterio. Eso da un balance más relajado, pero suficiente para garantizar que la altura sea O(logn).
+
+7. ¿Qué correcciones pueden aparecer después de insertar?
+
+ Después de insertar, pueden aparecer:
+ 
+ - recoloreos,
+ - rotaciones simples,
+ - rotaciones dobles.
+
+ En la implementación, el ajuste suele hacerse con addFixup, que corrige violaciones de color y estructura.
+
+8. ¿Qué correcciones pueden aparecer después de eliminar?
+
+ Después de eliminar, pueden aparecer:
+
+ - recoloreos,
+ - rotaciones,
+ - reequilibrio por casos especiales de la eliminación.
+
+ En la implementación, removeFixup se encarga de restaurar las propiedades cuando la eliminación deja un desequilibrio de color o de altura negra.
+
+9. ¿Qué papel cumplen las rotaciones en Red-Black Tree?
+
+ Las rotaciones sirven para reestructurar el árbol manteniendo la propiedad BST y redistribuyendo subárboles para restaurar las propiedades de color y balance.
+ No cambian el orden de los elementos; solo cambian la forma del árbol.
+
+10. ¿Qué papel cumple el cambio de colores?.
+ 
+ El cambio de colores ayuda a preservar las propiedades sin necesidad de reestructurar siempre.
+ Por ejemplo, cambiar un nodo a negro o rojo puede corregir una violación local de “rojo-rojo” o de altura negra.
+
+ **Lista de invariantes Red-Black**
+
+ Un Red-Black Tree debe mantener:
+ 
+ - Propiedad BST.
+ - La raíz es negra.
+ - Los nodos hojas nulas son negras.
+ - No hay dos rojos consecutivos.
+ - Todos los caminos desde un nodo a una hoja tienen la misma altura negra.
+
+ **Explicación de una inserción que requiera recoloreo**
+
+ En una inserción, el nodo nuevo suele comenzar en rojo.
+ Si su padre también es rojo, aparece una violación de “rojo-rojo”. Entonces el árbol puede corregirse con:
+
+ - cambio de colores en el abuelo y en sus hijos,
+ - o una rotación si el patrón lo requiere.
+ 
+ Por ejemplo, si el padre es rojo y el tío también es rojo, se recolorean los nodos del caso para restaurar la propiedad. Si el patrón es más complejo, se combina con una rotación.
+
+ **Evidencia de salida de la demostración**
+
+  En demo_redblack_morin.cpp se imprime:
+
+     RB inorder: ...
+     Valido RedBlack: si
+     Tras borrar 18 y 11: ...
+     Valido RedBlack: si
+
+ Eso muestra que, tras las inserciones y eliminaciones, el árbol sigue siendo válido y conserva el recorrido inorder ordenado.
 
 
 
