@@ -484,5 +484,150 @@
 
  Eso muestra que, tras las inserciones y eliminaciones, el árbol sigue siendo válido y conserva el recorrido inorder ordenado.
 
+#### Bloque 6 - Comparación: BST, Treap, AVL y Red-Black Tree
 
+ | Estructura | Propiedad de orden | Propiedad adicional | Operacion de reparacion | Altura esperada o garantizada | Caso donde conviene usarla |  
+ | :--- | :--- | :--- | :--- | :--- | :--- |
+ | BST común | Mantiene orden por clave | Ninguna adicional | Ninguna; puede degenerarse | O(n) en el peor caso | Explicar el concepto base de búsqueda ordenada | 
+ | Treap | Mantiene orden por clave | Prioridad aleatoria o asignada | Rotaciones para subir/bajar según prioridad | Esperada O(logn) con alta probabilidad | Cuando se quiere un árbol aleatorio y una implementación simple | 
+ | AVL | Mantiene orden por clave | Balance por altura | Rotaciones simples o dobles | Garantizada O(logn) | Cuando se necesita búsqueda muy fuerte y balance estricto | 
+ | Red-Black Tree | Mantiene orden por clave | Balance por colores | Recoloración y rotaciones | Garantizada  O(logn) | Cuando hay muchas inserciones y eliminaciones y se busca eficiencia práctica | 
+
+1. ¿Qué tienen en común BST, Treap, AVL y Red-Black Tree?
+
+ - Todas son estructuras de búsqueda basadas en BST.
+ - Todas mantienen el orden de las claves.
+ - Todas sirven para buscar, insertar y eliminar con una lógica ordenada.
+ - Todas intentan evitar que el árbol se vuelva una lista lineal.
+
+2. ¿Qué diferencia hay entre prioridad en Treap, altura en AVL y color en Red-Black Tree?
+
+ - En Treap, la “propiedad adicional” es la prioridad: el árbol se mantiene como una heap por prioridad.
+ - En AVL, la propiedad adicional es la altura: cada nodo debe cumplir que la diferencia de alturas de sus hijos sea como máximo 1.
+ - En Red-Black Tree, la propiedad adicional es el color: los nodos deben cumplir reglas de color para mantener el equilibrio.
+
+3. ¿Por qué Treap depende de prioridades?
+ 
+ - Treap depende de prioridades porque el árbol no se reequilibra solo por altura, sino por un criterio probabilístico.
+ - Las rotaciones se hacen para que la prioridad cumpla una propiedad de heap, lo que hace que la estructura sea balanceada con alta probabilidad.
+
+4. ¿Por qué AVL suele ser más estricto en altura?
+
+ - Porque exige un balance mucho más fuerte que Red-Black Tree.
+ - Eso da búsquedas muy predecibles y alturas cercanas a logn, pero con más trabajo de mantenimiento en inserciones y eliminaciones.
+
+5. ¿Por qué Red-Black Tree puede ser preferible cuando hay muchas inserciones y eliminaciones?
+
+ - Porque su balance es menos estricto que AVL, lo que reduce el costo de reequilibrio.
+ - En operaciones dinámicas intensas, suele ser una opción muy práctica.
+
+6. ¿Qué estructura elegirías para defender búsqueda ordenada con balance fuerte?
+
+ - AVL es una buena elección, porque su balance es muy claro y la altura está estrictamente controlada.
+
+7. ¿Qué estructura elegirías para explicar balance probabilístico?.
+
+ - Treap es la mejor opción, porque su equilibrio depende de prioridades aleatorias y se explica muy bien como una variante probabilística del BST.
+
+ **Decisión técnica breve**
+ Si el objetivo es defender un árbol de búsqueda ordenado con balance fuerte y garantías claras, elegiría AVL.
+ Si el objetivo es explicar un enfoque probabilístico de equilibrio, elegiría Treap.
+
+ **Conexión explícita con Semana 5 y Semana 6**
+ - Semana 5 aporta el BST como base conceptual.
+ - Semana 6 introduce Treap como una forma de reequilibrar usando prioridad.
+ - Semana 7 completa el panorama con AVL y Red-Black Tree, que usan altura y colores para mantener eficiencia.
+
+#### Bloque 7 - Pruebas, invariantes y defensa oral
+ 
+ | Prueba | Que valida | Evidencia observada |   
+ | :--- | :--- | :--- |  
+ | Prueba pública AVL | Inserción básica, eliminación, inorder y validez AVL | Se verifica que el recorrido quede ordenado y que el árbol siga siendo AVL válido | 
+ | Prueba pública Red-Black | Inserción, inserción duplicada, eliminación, validación de color y estructura | Se comprueba que el árbol siga siendo válido tras agregar y borrar | 
+ | Prueba interna | Inserciones aleatorias, borrados múltiples, comparación con conjunto de referencia, inorder completo y validación repetida | Cubre más casos borde y más volumen de operaciones |
+
+1. ¿Qué operaciones valida la prueba pública para AVL?
+
+ - Inserción de varias claves.
+ - Eliminación de una clave.
+ - Verificación de que el inorder quede ordenado.
+ - Verificación de que el árbol siga siendo AVL válido.
+
+2. ¿Qué operaciones valida la prueba pública para Red-Black Tree?
+
+ - Inserción de varias claves.
+ - Rechazo de inserción duplicada.
+ - Eliminación de una clave.
+ - Verificación de que el árbol siga siendo válido según las reglas del Red-Black Tree.
+
+3. ¿Qué casos adicionales cubre la prueba interna?
+
+ - Inserciones aleatorias con valores repetidos o variados.
+ - Eliminaciones en secuencia aleatoria.
+ - Comparación con un conjunto de referencia.
+ - Validación repetida de la estructura tras muchos cambios.
+
+4. ¿Qué significa que una prueba valide el inorder?
+
+ - Que el recorrido inorder produzca una secuencia ordenada creciente.
+ - Esto confirma que la estructura conserva la propiedad BST.
+
+5. ¿Qué significa que una prueba valide alturas o factores de balance?
+
+ - Que la altura de cada nodo o del árbol completo sea consistente con la definición AVL.
+ - En otras palabras, que el factor de balance no exceda los límites permitidos.
+
+6. ¿Qué significa que una prueba valide colores?
+
+ - Que se cumplan las reglas de color del Red-Black Tree:
+    - raíz negra,
+    - hojas nulas negras,
+    - no hay rojo-rojo,
+    - altura negra uniforme.
+
+7. ¿Qué no demuestra pasar solo las pruebas públicas?
+
+ - No demuestra que la estructura sea correcta en todos los casos posibles.
+ - No garantiza que se cubran todos los casos de eliminación, rotación, recoloreo o estructuras degeneradas.
+ - No demuestra robustez frente a muchos cambios o entradas aleatorias.
+
+8. ¿Qué evidencia usarías en una sustentación: demostración, prueba, trazado o argumento de complejidad?
+
+ - Una demostración ejecutable.
+ - La prueba automatizada con ctest.
+ - Un trazado manual de una inserción o eliminación.
+ - Un argumento de complejidad para justificar el costo.
+
+9. ¿Qué invariante revisarías primero si falla AVL?
+
+ - El invariante de balance por altura, es decir:
+   
+     ∣h(left)−h(right)∣≤1
+
+ - También revisaría que el inorder siga siendo ordenado.
+
+10. ¿Qué invariante revisarías primero si falla Red-Black Tree?.
+
+ - El invariante de color, especialmente:
+     - no hay dos rojos consecutivos,
+     - raíz negra,
+     - altura negra uniforme.
+
+  **Lista de invariantes que defendería**
+ 
+ - Propiedad BST.
+ - Orden inorder.
+ - Balance AVL por altura.
+ - Reglas de color del Red-Black Tree.
+ - Correcta actualización de alturas tras insertar o eliminar.
+ - Correcta preservación del orden tras rotaciones o recoloreos.
+
+ **Evidencia de ejecución de ctest**
+
+ La ejecución de la semana mostró que las pruebas de Semana 7 pasan correctamente.
+ El comando usado fue:
+
+       ctest --test-dir build-debug -R semana7 --output-on-failure
+
+ Y el resultado reportado fue exitoso, con salida final indicando que las pruebas de la semana completaron sin fallos.
 
