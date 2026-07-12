@@ -631,3 +631,83 @@
 
  Y el resultado reportado fue exitoso, con salida final indicando que las pruebas de la semana completaron sin fallos.
 
+#### Bloque 8 - Ejercicios de codificación
+
+ **Ejercicio 1**
+
+ Se implementó un validador recursivo de BST usando límites inferior y superior. La función revisa que cada nodo cumpla las restricciones heredadas de sus ancestros y que el subárbol izquierdo y derecho también sean válidos. Validar solo padre-hijo no es suficiente porque un nodo puede parecer correcto con su padre y aun así violar límites de un ancestro más arriba.
+
+ **Ejercicio 2**
+ 
+ Se creó una demostración que inserta varias secuencias en un AVL y cuenta rotaciones simples y dobles. Los casos LL y RR requieren una rotación simple, mientras que LR y RL requieren una rotación doble porque el desequilibrio aparece en un subárbol donde la inserción ocurre en el lado opuesto del pivote.
+
+ **Ejercicio 3**
+ 
+ Se implementó un verificador de balance AVL que calcula la altura de cada subárbol y comprueba que para todo nodo se cumpla que la diferencia entre las alturas de los hijos sea como máximo 1. La altura almacenada corresponde al valor mantenido por la estructura, mientras que la altura calculada se obtiene al recorrer el árbol.
+
+ **Ejercicio 4**
+ 
+ Se comparó un BST y un AVL usando las mismas claves. Con claves ordenadas, el BST se degenera y su altura crece mucho, mientras que el AVL mantiene una altura pequeña gracias a las rotaciones. Ambas estructuras conservan el mismo inorder porque las rotaciones no cambian el orden relativo de los elementos.
+
+ **Ejercicio 5**
+ 
+ Se implementó una validación básica de Red-Black Tree que revisa que la raíz sea negra, que no existan dos nodos rojos consecutivos y que todos los caminos desde un nodo hasta una hoja nula tengan la misma altura negra. Red-Black Tree permite mayor flexibilidad que AVL porque su balance es menos estricto y se apoya en colores.
+
+ **Ejercicio 6**
+ 
+ Se agregó una prueba pública adicional que verifica inserciones ordenadas en AVL, inorder correcto, altura máxima razonable, inserciones en Red-Black Tree y búsqueda correcta después de varias operaciones. Esta prueba detectaría bugs donde AVL dejara de conservar el balance o donde Red-Black Tree perdiera la propiedad de búsqueda.
+
+ **Ejercicio 7**
+ 
+ Se creó un mini benchmark que mide tiempos de búsqueda para BST, AVL y Red-Black Tree con n = 1000, 5000 y 10000, tanto en entradas ordenadas como aleatorias. El resultado muestra que la altura influye directamente en el costo de búsqueda y que las estructuras balanceadas son más eficientes que un BST degenerado.
+
+ **Ejercicio 8**
+ 
+ Se integraron las nuevas demostraciones y la prueba extra al CMake de Semana 7. Una demostración no es necesariamente una prueba automatizada porque solo muestra comportamiento, mientras que una prueba automatizada valida condiciones mediante asserts o fallos controlados.
+
+#### Bloque 9 - Cierre comparativo
+
+ En un BST común, las claves ordenadas pueden producir degeneración lineal, lo que transforma la estructura en una lista y eleva el costo de búsqueda a O(n). En cambio, AVL y Red-Black Tree aplican rotaciones para preservar el inorder mientras reorganizan la estructura.
+
+ - En AVL, el balance se controla por altura: cada nodo debe cumplir |altura(izq) - altura(der)| <= 1. Esta es una invariante estricta que garantiza altura O(log n) y busca evitar el peor caso lineal.
+ - En Red-Black Tree, el balance se controla por colores: raíz negra, no hay rojo-rojo, y todos los caminos hasta hojas nulas tienen la misma altura negra. Esto ofrece un balance más flexible que AVL, con altura garantizada O(log n) pero menos reestructuraciones obligatorias.
+ - Las rotaciones son la herramienta que permite conservar la propiedad BST mientras se corrige el balance. Rotar no altera el inorder, solo cambia la forma del árbol.
+ - La diferencia entre correctitud funcional y estructural es clave: inorder ordenado demuestra que la estructura cumple la propiedad BST (correctitud funcional). Sin embargo, no demuestra que el árbol esté balanceado ni que su altura sea eficiente (correctitud estructural).
+
+ Esta semana continúa a Semana 5 y Semana 6 al partir de un BST y añadir invariantes extra para mantener eficiencia:
+
+   - Semana 5 presentó el BST y las trayectorias de búsqueda.
+   - Semana 6 introdujo estructuras con propiedades adicionales como Treap.
+   - Semana 7 agrega AVL y Red-Black para balancear la altura usando rotaciones y colores.
+
+ Para defender correctitud usaría:
+
+ - pruebas automatizadas para verificar inorder, altura y colores;
+ - demostraciones para mostrar casos LL/RR/LR/RL y comportamiento en ordenado vs aleatorio;
+ - invariantes para explicar por qué cada estructura mantiene su balance;
+ - trazados y complejidad para justificar el costo O(log n) frente a O(n) en el BST degenerado.
+
+ **Autoevaluación breve**
+
+ - Qué puedo defender con seguridad:
+
+    - que AVL usa balance por altura y Red-Black usa balance por colores;
+    - que ambas estructuras preservan inorder con rotaciones;
+    - que el BST puede degenerar en el caso ordenado y perder eficiencia.
+ 
+ - Qué todavía confundo:
+
+    - la diferencia exacta entre los pasos de recoloreo en Red-Black y las rotaciones dobles en AVL;
+    - los detalles de implementación específicos de remove en cada estructura.
+
+ - Qué evidencia usaría en una sustentación:
+
+    - salidas de las demos de rotaciones y comparación de alturas;
+    - resultados de ctest con la prueba pública extra;
+    - tablas de tiempos del benchmark y la comparación de alturas.
+
+ - Qué parte del código debo revisar otra vez:
+
+    - Semana7/include/AVL.h para entender la reparación tras inserción y eliminación;
+    - Semana7/include/RedBlackTree.h para ver la lógica de colores y fixup;
+    - Semana7/demos/demo_compare_bst_avl_height.cpp para verificar el efecto de las rotaciones sobre la altura.
